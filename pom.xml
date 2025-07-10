@@ -5,12 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.github.a2asdk</groupId>
-        <artifactId>a2a-java-sdk-parent</artifactId>
-        <version>0.2.3.Beta1</version>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>49</version>
     </parent>
+
     <groupId>org.wildfly.extras.a2a</groupId>
     <artifactId>a2a-java-sdk-server-jakarta</artifactId>
+    <version>0.2.3.Beta2-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
@@ -40,18 +42,25 @@
         <url>https://github.com/wildfly-extras/a2a-java-sdk-server-jakarta</url>
     </scm>
 
-
-
     <properties>
+        <!--<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
         <version.wildfly>36.0.1.Final</version.wildfly>
+        <version.sdk>0.2.3.Beta1</version.sdk>
+        <version.hamcrest>2.2</version.hamcrest>
+        <version.junit>5.12.2</version.junit>
         <version.org.wildfly.arquillian>5.1.0.Beta11</version.org.wildfly.arquillian>
         <version.org.jboss.arquillian>1.10.0.Final</version.org.jboss.arquillian>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
         <version.shrinkwrap.resolvers>3.3.4</version.shrinkwrap.resolvers>
+        <version.rest-assured>5.5.1</version.rest-assured>
+
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <arquillian.java.vm.args></arquillian.java.vm.args>
         <server.debug.port>8787</server.debug.port>
+
+        <!-- Redirect test output to file -->
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -89,12 +98,12 @@
         <dependency>
             <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-server-common</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${version.sdk}</version>
         </dependency>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-tests-server-common</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${version.sdk}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -102,7 +111,7 @@
             <artifactId>a2a-java-sdk-tests-server-common</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
-            <version>${project.parent.version}</version>
+            <version>${version.sdk}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -137,6 +146,7 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
+            <version>${version.rest-assured}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -157,104 +167,177 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <version>${version.junit}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.threads</groupId>
             <artifactId>jboss-threads</artifactId>
-            <!--<version>3.9.1</version>-->
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
+            <version>${version.hamcrest}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.14.0</version>
+                    <configuration>
+                        <source>17</source>
+                        <target>17</target>
+                        <compilerArgs>
+                            <arg>-parameters</arg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.glow</groupId>
+                    <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                    <version>1.4.1.Final</version>
+                    <configuration>
+                        <feature-packs>
+                            <feature-pack>
+                                <groupId>org.wildfly</groupId>
+                                <artifactId>wildfly-galleon-pack</artifactId>
+                                <version>${version.wildfly}</version>
+                            </feature-pack>
+                        </feature-packs>
+                        <config-name>standalone.xml</config-name>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>scan</id>
+                            <goals>
+                                <goal>scan</goal>
+                            </goals>
+                            <phase>test-compile</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>5.1.3.Final</version>
+                    <configuration>
+                        <provisioning-file>${project.build.directory}/glow-scan/provisioning.xml</provisioning-file>
+                        <jboss-home>${jboss.home}</jboss-home>
+                        <provisioning-dir>${jboss.home}</provisioning-dir>
+                        <packagingScripts>
+                            <packaging-script>
+                                <scripts>
+                                    <script>./src/scripts/configure_logger.cli</script>
+                                </scripts>
+                            </packaging-script>
+                        </packagingScripts>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>test-provisioning</id>
+                            <goals>
+                                <goal>package</goal>
+                            </goals>
+                            <phase>test-compile</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.3</version>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <jboss.home>${jboss.home}</jboss.home>
+                            <arquillian.xml>arquillian.xml</arquillian.xml>
+                            <arquillian.java.vm.args>${arquillian.java.vm.args}</arquillian.java.vm.args>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.8.1</version>
+                    <configuration>
+                        <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>copy</id>
+                            <phase>generate-test-resources</phase>
+                            <goals>
+                                <goal>copy-dependencies</goal>
+                            </goals>
+                            <configuration>
+                                <includeScope>test</includeScope>
+                                <excludeScope>provided</excludeScope>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.3.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.11.2</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.2.7</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                            </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-arquillian-plugin</artifactId>
-                <version>1.4.1.Final</version>
-                <configuration>
-                    <feature-packs>
-                        <feature-pack>
-                            <groupId>org.wildfly</groupId>
-                            <artifactId>wildfly-galleon-pack</artifactId>
-                            <version>${version.wildfly}</version>
-                        </feature-pack>
-                    </feature-packs>
-                    <config-name>standalone.xml</config-name>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>scan</id>
-                        <goals>
-                            <goal>scan</goal>
-                        </goals>
-                        <phase>test-compile</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
-                <version>5.1.3.Final</version>
-                <configuration>
-                    <provisioning-file>${project.build.directory}/glow-scan/provisioning.xml</provisioning-file>
-                    <jboss-home>${jboss.home}</jboss-home>
-                    <provisioning-dir>${jboss.home}</provisioning-dir>
-                    <packagingScripts>
-                        <packaging-script>
-                            <scripts>
-                                <script>./src/scripts/configure_logger.cli</script>
-                            </scripts>
-                        </packaging-script>
-                    </packagingScripts>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>test-provisioning</id>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <phase>test-compile</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.3</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <jboss.home>${jboss.home}</jboss.home>
-                        <arquillian.xml>arquillian.xml</arquillian.xml>
-                        <arquillian.java.vm.args>${arquillian.java.vm.args}</arquillian.java.vm.args>
-                    </systemPropertyVariables>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <includeScope>test</includeScope>
-                            <excludeScope>provided</excludeScope>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -266,5 +349,28 @@
                 <arquillian.java.vm.args>-agentlib:jdwp=transport=dt_socket,address=*:${server.debug.port},server=y,suspend=y</arquillian.java.vm.args>
             </properties>
         </profile>
+        <profile>
+            <!--
+                This profile generates the required sources and javadoc in order to be able to deploy.
+            -->
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 </project>
