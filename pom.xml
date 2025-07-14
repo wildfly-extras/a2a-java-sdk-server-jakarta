@@ -11,13 +11,13 @@
     </parent>
 
     <groupId>org.wildfly.extras.a2a</groupId>
-    <artifactId>a2a-java-sdk-server-jakarta</artifactId>
+    <artifactId>a2a-java-sdk-server-jakarta-parent</artifactId>
     <version>0.2.3.Beta2-SNAPSHOT</version>
 
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <name>WildFly Extras - Java A2A SDK for Jakarta</name>
-    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta</description>
+    <name>WildFly Extras - Java A2A SDK for Jakarta Parent</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - Parent</description>
 
     <url>https://github.com/wildfly-extras/a2a-java-sdk-server-jakarta</url>
     <licenses>
@@ -322,25 +322,10 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.wildfly.glow</groupId>
-                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-        </plugins>
     </build>
+    <modules>
+        <module>impl</module>
+    </modules>
     <profiles>
         <profile>
             <id>debug.profile</id>

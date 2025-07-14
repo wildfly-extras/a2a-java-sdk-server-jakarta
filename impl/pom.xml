@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.extras.a2a</groupId>
+        <artifactId>a2a-java-sdk-server-jakarta-parent</artifactId>
+        <version>0.2.3.Beta2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>a2a-java-sdk-server-jakarta</artifactId>
+
+    <packaging>jar</packaging>
+
+    <name>WildFly Extras - Java A2A SDK for Jakarta</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta</description>
+
+    <url>https://github.com/wildfly-extras/a2a-java-sdk-server-jakarta</url>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>a2a-java-sdk-server-jakarta</id>
+            <name>The WildFly developers</name>
+            <organization>wildfly-extras</organization>
+            <organizationUrl>https://github.com/wildfly-extras/a2a-java-sdk-server-jakarta</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/wildfly-extras/a2a-java-sdk-server-jakarta.git</connection>
+        <developerConnection>scm:git:ssh://github.com:wildfly-extras/a2a-java-sdk-server-jakarta.git</developerConnection>
+        <url>https://github.com/wildfly-extras/a2a-java-sdk-server-jakarta</url>
+    </scm>
+
+    <properties>
+        <!--<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
+        <version.wildfly>36.0.1.Final</version.wildfly>
+        <version.sdk>0.2.3.Beta1</version.sdk>
+        <version.hamcrest>2.2</version.hamcrest>
+        <version.junit>5.12.2</version.junit>
+        <version.org.wildfly.arquillian>5.1.0.Beta11</version.org.wildfly.arquillian>
+        <version.org.jboss.arquillian>1.10.0.Final</version.org.jboss.arquillian>
+        <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
+        <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
+        <version.shrinkwrap.resolvers>3.3.4</version.shrinkwrap.resolvers>
+        <version.rest-assured>5.5.1</version.rest-assured>
+
+        <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
+        <arquillian.java.vm.args></arquillian.java.vm.args>
+        <server.debug.port>8787</server.debug.port>
+
+        <!-- Redirect test output to file -->
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
