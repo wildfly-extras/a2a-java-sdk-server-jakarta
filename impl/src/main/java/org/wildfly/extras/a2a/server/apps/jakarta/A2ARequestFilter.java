@@ -28,7 +28,8 @@ public class A2ARequestFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
-        if (requestContext.getMethod().equals("POST") && requestContext.hasEntity()) {
+        String path = requestContext.getUriInfo().getPath();
+        if (isA2ARequest(requestContext)) {
             try (InputStream entityInputStream = requestContext.getEntityStream()) {
                 byte[] requestBodyBytes = entityInputStream.readAllBytes();
                 String requestBody = new String(requestBodyBytes);
@@ -47,6 +48,14 @@ public class A2ARequestFilter implements ContainerRequestFilter {
                 throw new RuntimeException("Unable to read the request body");
             }
         }
+    }
+
+    private boolean isA2ARequest(ContainerRequestContext requestContext) {
+        String path = requestContext.getUriInfo().getPath().trim();
+        if (path.equals("/") || path.startsWith("/agent/") || path.startsWith("/.well-known/")) {
+            return requestContext.getMethod().equals("POST") && requestContext.hasEntity();
+        }
+        return false;
     }
 
     private static boolean isStreamingRequest(String requestBody) {

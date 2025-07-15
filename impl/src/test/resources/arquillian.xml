@@ -4,7 +4,7 @@
 
     <engine>
         <!-- Uncomment to inspect created deployments -->
-        <!--<property name="deploymentExportPath">target/deployments</property>-->
+        <property name="deploymentExportPath">target/deployments</property>
     </engine>
 
     <container qualifier="jboss" default="true">

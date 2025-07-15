@@ -10,21 +10,18 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
 import io.a2a.server.apps.common.AbstractA2AServerTest;
-import io.a2a.server.apps.common.AgentCardProducer;
-import io.a2a.server.apps.common.AgentExecutorProducer;
-import io.a2a.server.events.InMemoryQueueManager;
-import io.a2a.server.tasks.TaskStore;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
+
 
 @ArquillianTest
-@ApplicationScoped
+@RunAsClient
 public class JakartaA2AServerTest extends AbstractA2AServerTest {
 
     public JakartaA2AServerTest() {
@@ -60,37 +57,16 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
         }
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "ROOT.war")
                 .addAsLibraries(libraries.toArray(new File[libraries.size()]))
-                .addClass(AbstractA2AServerTest.class)
-                .addClass(AgentCardProducer.class)
-                .addClass(AgentExecutorProducer.class)
+                .addPackage(AbstractA2AServerTest.class.getPackage())
                 .addClass(JakartaA2AServerTest.class)
                 .addClass(A2ARequestFilter.class)
                 .addClass(A2AServerResource.class)
+                .addClass(A2ATestResource.class)
                 .addClass(RestApplication.class)
                 .addAsManifestResource("META-INF/beans.xml", "beans.xml")
                 .addAsWebInfResource("META-INF/beans.xml", "beans.xml")
                 .addAsWebInfResource("WEB-INF/web.xml", "web.xml");
+        archive.toString(true);
         return archive;
-    }
-    
-    @Inject
-    TaskStore taskStore;
-
-    @Inject
-    InMemoryQueueManager queueManager;
-
-    @Override
-    protected TaskStore getTaskStore() {
-        return taskStore;
-    }
-
-    @Override
-    protected InMemoryQueueManager getQueueManager() {
-        return queueManager;
-    }
-
-    @Override
-    protected void setStreamingSubscribedRunnable(Runnable runnable) {
-        A2AServerResource.setStreamingIsSubscribedRunnable(runnable);
     }
 }
