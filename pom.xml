@@ -97,7 +97,22 @@
             </dependency>
             <dependency>
                 <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-client</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-common</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
                 <artifactId>a2a-java-sdk-server-common</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-spec</artifactId>
                 <version>${version.sdk}</version>
             </dependency>
             <dependency>
@@ -276,11 +291,16 @@
                             </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.7.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
     <modules>
         <module>impl</module>
+        <module>wildfly-jar</module>
     </modules>
     <profiles>
         <profile>
