@@ -35,16 +35,7 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                     "a2a-java-sdk-common",
                     "a2a-java-sdk-server-common",
                     "a2a-java-sdk-spec",
-                    "jackson",
-                    "mutiny",
-                    "slf4j",
-                    "rest-assured",
-                    "groovy",
-                    "http",
-                    "commons",
-                    "xml-path",
-                    "json-path",
-                    "hamcrest"
+                    "mutiny"
             );
         List<File> libraries = new ArrayList<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get("target").resolve("lib"))) {
@@ -58,7 +49,6 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "ROOT.war")
                 .addAsLibraries(libraries.toArray(new File[libraries.size()]))
                 .addPackage(AbstractA2AServerTest.class.getPackage())
-                .addClass(JakartaA2AServerTest.class)
                 .addClass(A2ARequestFilter.class)
                 .addClass(A2AServerResource.class)
                 .addClass(A2ATestResource.class)
