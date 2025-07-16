@@ -28,7 +28,6 @@ public class A2ARequestFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
-        String path = requestContext.getUriInfo().getPath();
         if (isA2ARequest(requestContext)) {
             try (InputStream entityInputStream = requestContext.getEntityStream()) {
                 byte[] requestBodyBytes = entityInputStream.readAllBytes();

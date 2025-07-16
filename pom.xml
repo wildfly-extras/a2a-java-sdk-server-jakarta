@@ -46,6 +46,8 @@
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <version.wildfly>36.0.1.Final</version.wildfly>
         <version.sdk>${project.version}</version.sdk>
+        <!-- This needs to be same version as used by the sdk -->
+        <version.mutiny-zero>1.1.1</version.mutiny-zero>
 
         <version.commons-logging>1.3.5</version.commons-logging>
         <version.hamcrest>2.2</version.hamcrest>
@@ -119,6 +121,11 @@
                 <groupId>io.github.a2asdk</groupId>
                 <artifactId>a2a-java-sdk-tests-server-common</artifactId>
                 <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>mutiny-zero</artifactId>
+                <version>${version.mutiny-zero}</version>
             </dependency>
             <dependency>
                 <groupId>io.github.a2asdk</groupId>
@@ -301,6 +308,7 @@
     <modules>
         <module>impl</module>
         <module>wildfly-jar</module>
+        <module>test-utils</module>
     </modules>
     <profiles>
         <profile>

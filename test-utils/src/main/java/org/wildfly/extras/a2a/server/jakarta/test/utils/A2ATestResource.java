@@ -1,4 +1,4 @@
-package org.wildfly.extras.a2a.server.apps.jakarta;
+package org.wildfly.extras.a2a.server.jakarta.test.utils;
 
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
@@ -18,9 +18,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.a2a.server.apps.common.TestUtilsBean;
-import io.a2a.spec.Event;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
@@ -36,7 +34,7 @@ public class A2ATestResource {
 
     @PostConstruct
     public void init() {
-        A2AServerResource.setStreamingIsSubscribedRunnable(streamingSubscribedCount::incrementAndGet);
+        //A2AServerResource.setStreamingIsSubscribedRunnable(streamingSubscribedCount::incrementAndGet);
     }
 
 

@@ -208,7 +208,7 @@ public class A2AServerResource {
         return new JSONRPCErrorResponse(request.getId(), error);
     }
 
-    static void setStreamingIsSubscribedRunnable(Runnable streamingIsSubscribedRunnable) {
+    public static void setStreamingIsSubscribedRunnable(Runnable streamingIsSubscribedRunnable) {
         A2AServerResource.streamingIsSubscribedRunnable = streamingIsSubscribedRunnable;
     }
 
