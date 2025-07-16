@@ -11,17 +11,17 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>a2a-java-sdk-server-jakarta-tests</artifactId>
+    <artifactId>a2a-java-sdk-server-jakarta-tests-wildfly</artifactId>
 
     <packaging>jar</packaging>
 
-    <name>WildFly Extras - Java A2A SDK for Jakarta - Tests</name>
-    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - Tests</description>
+    <name>WildFly Extras - Java A2A SDK for Jakarta - Tests - WildFly Jar</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - Tests - WildFly Jar</description>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-server-jakarta</artifactId>
+            <artifactId>a2a-java-sdk-server-jakarta-wildfly</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
@@ -29,11 +29,6 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-server-jakarta-test-utils</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.a2asdk</groupId>
-            <artifactId>a2a-java-sdk-server-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

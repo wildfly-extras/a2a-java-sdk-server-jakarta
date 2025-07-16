@@ -309,6 +309,7 @@
         <module>wildfly-jar</module>
         <module>tests/utils</module>
         <module>tests/impl</module>
+        <module>tests/wildfly-jar</module>
     </modules>
     <profiles>
         <profile>
