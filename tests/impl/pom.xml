@@ -6,9 +6,8 @@
 
     <parent>
         <groupId>org.wildfly.extras.a2a</groupId>
-        <artifactId>a2a-java-sdk-server-jakarta-parent</artifactId>
+        <artifactId>a2a-java-sdk-server-jakarta-test-parent</artifactId>
         <version>0.2.3.Beta2-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>a2a-java-sdk-server-jakarta-tests</artifactId>
