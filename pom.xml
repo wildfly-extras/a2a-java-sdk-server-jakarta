@@ -11,13 +11,13 @@
     </parent>
 
     <groupId>org.wildfly.extras.a2a</groupId>
-    <artifactId>a2a-java-sdk-server-jakarta</artifactId>
+    <artifactId>a2a-java-sdk-server-jakarta-parent</artifactId>
     <version>0.2.3.Beta2-SNAPSHOT</version>
 
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <name>WildFly Extras - Java A2A SDK for Jakarta</name>
-    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta</description>
+    <name>WildFly Extras - Java A2A SDK for Jakarta Parent</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - Parent</description>
 
     <url>https://github.com/wildfly-extras/a2a-java-sdk-server-jakarta</url>
     <licenses>
@@ -43,9 +43,13 @@
     </scm>
 
     <properties>
-        <!--<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
+        <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <version.wildfly>36.0.1.Final</version.wildfly>
-        <version.sdk>0.2.3.Beta1</version.sdk>
+        <version.sdk>${project.version}</version.sdk>
+        <!-- This needs to be same version as used by the sdk -->
+        <version.mutiny-zero>1.1.1</version.mutiny-zero>
+
+        <version.jboss-commons-logging>1.0.0.Final</version.jboss-commons-logging>
         <version.hamcrest>2.2</version.hamcrest>
         <version.junit>5.12.2</version.junit>
         <version.org.wildfly.arquillian>5.1.0.Beta11</version.org.wildfly.arquillian>
@@ -53,7 +57,7 @@
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
         <version.shrinkwrap.resolvers>3.3.4</version.shrinkwrap.resolvers>
-        <version.rest-assured>5.5.1</version.rest-assured>
+        <version.rest-assured>5.5.5</version.rest-assured>
 
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <arquillian.java.vm.args></arquillian.java.vm.args>
@@ -61,6 +65,7 @@
 
         <!-- Redirect test output to file -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -92,96 +97,68 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-client</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-common</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-server-common</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-spec</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-tests-server-common</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>mutiny-zero</artifactId>
+                <version>${version.mutiny-zero}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-tests-server-common</artifactId>
+                <type>test-jar</type>
+                <scope>test</scope>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>rest-assured</artifactId>
+                <version>${version.rest-assured}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>commons-logging-jboss-logging</artifactId>
+                <version>${version.jboss-commons-logging}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${version.junit}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>${version.hamcrest}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>io.github.a2asdk</groupId>
-            <artifactId>a2a-java-sdk-server-common</artifactId>
-            <version>${version.sdk}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.a2asdk</groupId>
-            <artifactId>a2a-java-sdk-tests-server-common</artifactId>
-            <version>${version.sdk}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.a2asdk</groupId>
-            <artifactId>a2a-java-sdk-tests-server-common</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-            <version>${version.sdk}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.inject</groupId>
-            <artifactId>jakarta.inject-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.json</groupId>
-            <artifactId>jakarta.json-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <version>${version.rest-assured}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.junit5</groupId>
-            <artifactId>arquillian-junit5-container</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.arquillian</groupId>
-            <artifactId>wildfly-arquillian-container-managed</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.shrinkwrap</groupId>
-            <artifactId>shrinkwrap-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${version.junit}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.threads</groupId>
-            <artifactId>jboss-threads</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest</artifactId>
-            <version>${version.hamcrest}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
     <build>
         <pluginManagement>
             <plugins>
@@ -261,27 +238,6 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.8.1</version>
-                    <configuration>
-                        <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>copy</id>
-                            <phase>generate-test-resources</phase>
-                            <goals>
-                                <goal>copy-dependencies</goal>
-                            </goals>
-                            <configuration>
-                                <includeScope>test</includeScope>
-                                <excludeScope>provided</excludeScope>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>3.3.1</version>
                     <executions>
@@ -320,27 +276,20 @@
                             </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.7.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.wildfly.glow</groupId>
-                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
-        </plugins>
     </build>
+    <modules>
+        <module>impl</module>
+        <module>wildfly-jar</module>
+        <module>tests/common</module>
+        <module>tests/impl</module>
+        <module>tests/wildfly-jar</module>
+    </modules>
     <profiles>
         <profile>
             <id>debug.profile</id>
