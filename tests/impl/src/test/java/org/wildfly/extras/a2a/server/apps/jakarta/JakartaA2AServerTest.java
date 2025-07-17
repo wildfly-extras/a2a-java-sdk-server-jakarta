@@ -58,7 +58,6 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                 .addPackage(A2ATestResource.class.getPackage())
                 // Add deployment descriptors
                 .addAsManifestResource("META-INF/beans.xml", "beans.xml")
-                .addAsWebInfResource("META-INF/beans.xml", "beans.xml")
                 .addAsWebInfResource("WEB-INF/web.xml", "web.xml");
         archive.toString(true);
         return archive;
