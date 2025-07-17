@@ -11,6 +11,9 @@ import io.a2a.spec.AgentCapabilities;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.AgentSkill;
 
+/**
+ * This is a copy of the AgentCardProducer from the a2a-java SDK's tck/ module
+ */
 @ApplicationScoped
 public class AgentCardProducer {
 

@@ -16,6 +16,9 @@ import io.a2a.spec.TaskState;
 import io.a2a.spec.TaskStatus;
 import io.a2a.spec.TaskStatusUpdateEvent;
 
+/**
+ * This is a copy of the AgentExecutorProducer from the a2a-java SDK's tck/ module
+ */
 @ApplicationScoped
 public class AgentExecutorProducer {
 
