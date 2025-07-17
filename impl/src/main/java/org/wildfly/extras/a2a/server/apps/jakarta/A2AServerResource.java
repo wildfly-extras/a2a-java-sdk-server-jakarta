@@ -25,6 +25,7 @@ import io.a2a.server.requesthandlers.JSONRPCHandler;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskRequest;
+import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskRequest;
 import io.a2a.spec.IdJsonMappingException;
@@ -37,6 +38,7 @@ import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.JSONRPCErrorResponse;
 import io.a2a.spec.JSONRPCRequest;
 import io.a2a.spec.JSONRPCResponse;
+import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.MethodNotFoundJsonMappingException;
 import io.a2a.spec.NonStreamingJSONRPCRequest;
@@ -146,11 +148,15 @@ public class A2AServerResource {
         } else if (request instanceof CancelTaskRequest) {
             return jsonRpcHandler.onCancelTask((CancelTaskRequest) request);
         } else if (request instanceof SetTaskPushNotificationConfigRequest) {
-            return jsonRpcHandler.setPushNotification((SetTaskPushNotificationConfigRequest) request);
+            return jsonRpcHandler.setPushNotificationConfig((SetTaskPushNotificationConfigRequest) request);
         } else if (request instanceof GetTaskPushNotificationConfigRequest) {
-            return jsonRpcHandler.getPushNotification((GetTaskPushNotificationConfigRequest) request);
+            return jsonRpcHandler.getPushNotificationConfig((GetTaskPushNotificationConfigRequest) request);
         } else if (request instanceof SendMessageRequest) {
             return jsonRpcHandler.onMessageSend((SendMessageRequest) request);
+        } else if (request instanceof ListTaskPushNotificationConfigRequest) {
+            return jsonRpcHandler.listPushNotificationConfig((ListTaskPushNotificationConfigRequest) request);
+        } else if (request instanceof DeleteTaskPushNotificationConfigRequest) {
+            return jsonRpcHandler.deletePushNotificationConfig((DeleteTaskPushNotificationConfigRequest) request);
         } else {
             return generateErrorResponse(request, new UnsupportedOperationError());
         }

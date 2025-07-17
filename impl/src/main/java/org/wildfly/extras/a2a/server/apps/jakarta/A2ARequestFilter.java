@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import io.a2a.spec.CancelTaskRequest;
+import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskRequest;
+import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.SendMessageRequest;
 import io.a2a.spec.SendStreamingMessageRequest;
 import io.a2a.spec.SetTaskPushNotificationConfigRequest;
@@ -67,7 +69,9 @@ public class A2ARequestFilter implements ContainerRequestFilter {
                 requestBody.contains(CancelTaskRequest.METHOD) ||
                 requestBody.contains(SendMessageRequest.METHOD) ||
                 requestBody.contains(SetTaskPushNotificationConfigRequest.METHOD) ||
-                requestBody.contains(GetTaskPushNotificationConfigRequest.METHOD);
+                requestBody.contains(GetTaskPushNotificationConfigRequest.METHOD) ||
+                requestBody.contains(ListTaskPushNotificationConfigRequest.METHOD) ||
+                requestBody.contains(DeleteTaskPushNotificationConfigRequest.METHOD);
     }
 
     private static void putAcceptHeader(ContainerRequestContext requestContext, String mediaType) {
