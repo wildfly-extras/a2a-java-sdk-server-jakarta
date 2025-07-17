@@ -15,6 +15,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.extras.a2a.server.jakarta.test.common.A2ATestResource;
 import org.wildfly.extras.a2a.server.jakarta.test.common.RestApplication;
@@ -29,26 +30,18 @@ public class WildFlyJarJakartaA2AServerTest extends AbstractA2AServerTest {
     }
 
     @Deployment
-    public static WebArchive createTestArchive() throws IOException {
+    public static WebArchive createTestArchive() throws Exception {
 
+        // Get wildfly-jar path
+        JavaArchive wildFlyJar = ShrinkWrap.createFromZipFile(JavaArchive.class,
+                new File(A2AServerResource.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
 
-        final List<String> prefixes = List.of(
-                    "a2a-java-sdk-server-jakarta-wildfly"
-            );
-        List<File> libraries = new ArrayList<>();
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get("target").resolve("lib"))) {
-            for (Path file : stream) {
-                String fileName = file.getFileName().toString();
-                if (prefixes.stream().anyMatch(fileName::startsWith)) {
-                    libraries.add(file.toFile());
-                }
-            }
-        }
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "ROOT.war")
-                .addAsLibraries(libraries.toArray(new File[libraries.size()]))
+                .addAsLibrary(wildFlyJar)
+                // Extra dependencies needed by the tests
                 .addPackage(AbstractA2AServerTest.class.getPackage())
-                .addClass(A2ATestResource.class)
-                .addClass(RestApplication.class)
+                .addPackage(A2ATestResource.class.getPackage())
+                // Add deployment descriptors
                 .addAsManifestResource("META-INF/beans.xml", "beans.xml")
                 .addAsWebInfResource("META-INF/beans.xml", "beans.xml")
                 .addAsWebInfResource("WEB-INF/web.xml", "web.xml");
