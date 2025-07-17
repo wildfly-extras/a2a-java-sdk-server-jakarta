@@ -30,12 +30,10 @@ public class WildFlyJarJakartaA2AServerTest extends AbstractA2AServerTest {
 
     @Deployment
     public static WebArchive createTestArchive() throws IOException {
+
+
         final List<String> prefixes = List.of(
-                    "a2a-java-sdk-client",
-                    "a2a-java-sdk-common",
-                    "a2a-java-sdk-server-common",
-                    "a2a-java-sdk-spec",
-                    "mutiny"
+                    "a2a-java-sdk-server-jakarta-wildfly"
             );
         List<File> libraries = new ArrayList<>();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get("target").resolve("lib"))) {
@@ -49,8 +47,6 @@ public class WildFlyJarJakartaA2AServerTest extends AbstractA2AServerTest {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "ROOT.war")
                 .addAsLibraries(libraries.toArray(new File[libraries.size()]))
                 .addPackage(AbstractA2AServerTest.class.getPackage())
-                .addClass(A2ARequestFilter.class)
-                .addClass(A2AServerResource.class)
                 .addClass(A2ATestResource.class)
                 .addClass(RestApplication.class)
                 .addAsManifestResource("META-INF/beans.xml", "beans.xml")
