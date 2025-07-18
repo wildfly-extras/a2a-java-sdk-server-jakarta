@@ -19,6 +19,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import io.a2a.server.apps.common.TestUtilsBean;
+import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
@@ -101,5 +102,30 @@ public class A2ATestResource {
     @Produces(TEXT_PLAIN)
     public Response getStreamingSubscribedCount() {
         return Response.ok(String.valueOf(streamingSubscribedCount.get()), TEXT_PLAIN).build();
+    }
+
+    @DELETE
+    @Path("/task/{taskId}/config/{configId}")
+    public Response deleteTaskPushNotificationConfig(@PathParam("taskId") String taskId, @PathParam("configId") String configId) {
+        Task task = testUtilsBean.getTask(taskId);
+        if (task == null) {
+            return Response.status(404).build();
+        }
+        testUtilsBean.deleteTaskPushNotificationConfig(taskId, configId);
+        return Response.ok()
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .build();
+    }
+
+    @POST
+    @Path("/task/{taskId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response savePushNotificationConfigInStore(@PathParam("taskId") String taskId, String body) throws Exception {
+        PushNotificationConfig notificationConfig = Utils.OBJECT_MAPPER.readValue(body, PushNotificationConfig.class);
+        if (notificationConfig == null) {
+            return Response.status(404).build();
+        }
+        testUtilsBean.saveTaskPushNotificationConfig(taskId, notificationConfig);
+        return Response.ok().build();
     }
 }
