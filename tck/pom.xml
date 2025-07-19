@@ -34,6 +34,16 @@
             <artifactId>a2a-java-sdk-spec</artifactId>
             <scope>provided</scope>
         </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-tck-server</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
