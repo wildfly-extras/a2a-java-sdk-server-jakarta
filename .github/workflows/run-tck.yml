@@ -2,12 +2,8 @@ name: Build and Run TCK
 
 on:
   push:
-    branches:
-#      - main
   pull_request:
-    branches:
-#      - main
-
+  workflow_dispatch:
 
 env:
   # Tag of the TCK
