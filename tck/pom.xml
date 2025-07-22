@@ -18,50 +18,71 @@
     <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - TCK - WildFly Jar</description>
 
     <dependencies>
+        <!--
+            Dependencies needed to build the application.
+        -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-server-jakarta-wildfly</artifactId>
+            <artifactId>a2a-java-sdk-server-jakarta</artifactId>
             <version>${project.version}</version>
             <exclusions>
+                <!--
+                    Exclude these transitive dependencies since we are deploying the TCK in WildFly,
+                    where the server provides these dependencies.
+                    Other servlet containers/application servers may provide other things.
+                -->
                 <exclusion>
-                    <groupId>*</groupId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.inject</groupId>
+                    <artifactId>jakarta.inject-api</artifactId>
+                </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.github.a2asdk</groupId>
-            <artifactId>a2a-java-sdk-spec</artifactId>
-            <scope>provided</scope>
-        </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-tck-server</artifactId>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <!--
+            Include the TCK server from the a2a-java project.
+            This is the application we will be using, providing the AgentExecutor and the AgentCard.
+            For your own applications you should not use this dependency, but rather provide your own.
+        -->
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-tck-server</artifactId>
+            <exclusions>
+                <!--
+                    Exclude all dependencies, since we are managing what is included in the jar in the
+                    org.wildfly.extras.a2a:ctId>a2a-java-sdk-server-jakarta dependency.
+                -->
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
+            <!--
+                WildFly specific plugin to provision a WildFly server with the functionality required to
+                run our .war file.
+                It deploys the war renamed to 'ROOT.war' so that it is deployed under the root context, i.e. under '/'.
+                By default, this will be under http://localhost:8080/.
+            -->
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
