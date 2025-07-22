@@ -1,4 +1,4 @@
-package org.wildfly.extras.a2a.server.jakarta.test.common;
+package org.wildfly.extras.a2a.server.apps.jakarta;
 
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 

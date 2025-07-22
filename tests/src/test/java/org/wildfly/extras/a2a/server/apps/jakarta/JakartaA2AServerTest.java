@@ -2,12 +2,6 @@ package org.wildfly.extras.a2a.server.apps.jakarta;
 
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 import io.a2a.A2A;
@@ -22,8 +16,6 @@ import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.wildfly.extras.a2a.server.jakarta.test.common.A2ATestResource;
-import org.wildfly.extras.a2a.server.jakarta.test.common.RestApplication;
 
 
 @ArquillianTest

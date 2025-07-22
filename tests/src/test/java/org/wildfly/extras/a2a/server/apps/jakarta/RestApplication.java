@@ -1,4 +1,4 @@
-package org.wildfly.extras.a2a.server.jakarta.test.common;
+package org.wildfly.extras.a2a.server.apps.jakarta;
 
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
