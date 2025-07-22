@@ -64,7 +64,7 @@ jobs:
         working-directory: a2a-tck
       - name: Start the WildFly SUT
         run: |
-          mvn wildfly:start -B -pl tck -Dstartup-timeout=120
+          mvn wildfly:start -B -Dversion.sdk=${SDK_VERSION} -pl tck -Dstartup-timeout=120
       - name: Run TCK
         run: |
           ./run_tck.py --sut-url http://localhost:8080 --category all --compliance-report report.json
