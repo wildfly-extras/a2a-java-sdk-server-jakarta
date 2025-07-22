@@ -250,7 +250,6 @@
     </build>
     <modules>
         <module>impl</module>
-        <module>wildfly-jar</module>
         <module>tck</module>
         <module>tests</module>
     </modules>

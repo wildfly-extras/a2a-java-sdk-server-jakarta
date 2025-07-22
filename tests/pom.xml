@@ -74,6 +74,5 @@
     <modules>
         <module>common</module>
         <module>impl</module>
-        <module>wildfly-jar</module>
     </modules>
 </project>
