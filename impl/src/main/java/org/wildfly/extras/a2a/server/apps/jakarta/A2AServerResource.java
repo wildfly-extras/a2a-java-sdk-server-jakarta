@@ -17,6 +17,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import jakarta.ws.rs.sse.Sse;
@@ -91,9 +92,11 @@ public class A2AServerResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public JSONRPCResponse<?> handleNonStreamingRequests(NonStreamingJSONRPCRequest<?> request,
-                                                         @Context HttpServletRequest httpRequest) {
-        ServerCallContext context = createCallContext(httpRequest);
+    public JSONRPCResponse<?> handleNonStreamingRequests(
+            NonStreamingJSONRPCRequest<?> request, @Context HttpServletRequest httpRequest,
+            @Context SecurityContext securityContext) {
+
+        ServerCallContext context = createCallContext(httpRequest, securityContext);
         LOGGER.debug("Handling non-streaming request");
         try {
             return processNonStreamingRequest(request, context);
@@ -109,9 +112,11 @@ public class A2AServerResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.SERVER_SENT_EVENTS)
-    public void handleStreamingRequests(StreamingJSONRPCRequest<?> request, @Context SseEventSink sseEventSink,
-                                        @Context Sse sse, @Context HttpServletRequest httpRequest) {
-        ServerCallContext context = createCallContext(httpRequest);
+    public void handleStreamingRequests(
+            StreamingJSONRPCRequest<?> request, @Context SseEventSink sseEventSink,
+            @Context Sse sse, @Context HttpServletRequest httpRequest,
+            @Context SecurityContext securityContext) {
+        ServerCallContext context = createCallContext(httpRequest, securityContext);
         LOGGER.debug("Handling streaming request");
         executor.execute(() -> processStreamingRequest(request, sseEventSink, sse, context));
         LOGGER.debug("Submitted streaming request for async processing");
@@ -235,29 +240,30 @@ public class A2AServerResource {
         A2AServerResource.streamingIsSubscribedRunnable = streamingIsSubscribedRunnable;
     }
 
-    private ServerCallContext createCallContext(HttpServletRequest request) {
+    private ServerCallContext createCallContext(HttpServletRequest request, SecurityContext securityContext) {
 
         if (callContextFactory.isUnsatisfied()) {
             User user;
-            if (request.getRemoteUser() == null) {
+
+            if (securityContext.getUserPrincipal() == null) {
                 user = UnauthenticatedUser.INSTANCE;
             } else {
                 user = new User() {
                     @Override
                     public boolean isAuthenticated() {
-                        return false;
+                        return true;
                     }
 
                     @Override
                     public String getUsername() {
-                        return request.getRemoteUser();
+                        return securityContext.getUserPrincipal().getName();
                     }
                 };
             }
             Map<String, Object> state = new HashMap<>();
             // TODO Python's impl has
             //    state['auth'] = request.auth
-            //  in jsonrpc_app.py. Figure out what this maps to in what Vert.X gives us
+            //  in jsonrpc_app.py. Figure out what this maps to in what we have here
 
             Map<String, String> headers = new HashMap<>();
             for (Enumeration<String> headerNames = request.getHeaderNames(); headerNames.hasMoreElements() ; ) {
