@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly.extras.a2a</groupId>
+            <groupId>org.wildfly.a2a</groupId>
         <artifactId>a2a-java-sdk-server-jakarta-parent</artifactId>
         <version>0.2.5.Beta2-SNAPSHOT</version>
     </parent>
@@ -39,14 +39,6 @@
                     <groupId>com.fasterxml.jackson.datatype</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>jakarta.enterprise</groupId>
-                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jakarta.inject</groupId>
-                    <artifactId>jakarta.inject-api</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -66,7 +58,7 @@
             <exclusions>
                 <!--
                     Exclude all dependencies, since we are managing what is included in the jar in the
-                    org.wildfly.extras.a2a:ctId>a2a-java-sdk-server-jakarta dependency.
+                    org.wildfly.a2a:a2a-java-sdk-server-jakarta dependency.
                 -->
                 <exclusion>
                     <groupId>*</groupId>
