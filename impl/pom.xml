@@ -28,6 +28,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-tests-server-common</artifactId>
             <type>test-jar</type>
