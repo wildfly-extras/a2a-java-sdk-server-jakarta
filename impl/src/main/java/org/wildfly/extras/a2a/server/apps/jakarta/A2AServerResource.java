@@ -25,11 +25,11 @@ import jakarta.ws.rs.sse.SseEventSink;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import io.a2a.jsonrpc.handler.JSONRPCHandler;
 import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.auth.User;
-import io.a2a.server.requesthandlers.JSONRPCHandler;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskRequest;
@@ -60,7 +60,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path("/")
-public class A2AServerResource {
+    public class A2AServerResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(A2AServerResource.class);
 
