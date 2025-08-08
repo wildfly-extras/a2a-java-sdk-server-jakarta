@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
-            <artifactId>a2a-java-sdk-server-common</artifactId>
+            <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>jakarta.enterprise</groupId>
