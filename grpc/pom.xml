@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.extras.a2a</groupId>
+        <artifactId>a2a-java-sdk-server-jakarta-parent</artifactId>
+        <version>0.2.6.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>a2a-java-sdk-server-jakarta-grpc</artifactId>
+    <packaging>jar</packaging>
+
+    <name>WildFly Extras - Java A2A SDK for Jakarta gRPC</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - gRPC integration</description>
+
+    <dependencies>
+        <!-- A2A spec-grpc dependency -->
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-transport-grpc</artifactId>
+            <version>${version.sdk}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Jakarta APIs needed for CDI and annotation support -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- A2A server common for @PublicAgentCard and RequestHandler -->
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-server-common</artifactId>
+            <version>${version.sdk}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
