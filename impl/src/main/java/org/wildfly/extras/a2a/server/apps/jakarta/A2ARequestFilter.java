@@ -7,6 +7,7 @@ import java.io.InputStream;
 
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
+import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskRequest;
 import io.a2a.spec.ListTaskPushNotificationConfigRequest;
@@ -71,7 +72,8 @@ public class A2ARequestFilter implements ContainerRequestFilter {
                 requestBody.contains(SetTaskPushNotificationConfigRequest.METHOD) ||
                 requestBody.contains(GetTaskPushNotificationConfigRequest.METHOD) ||
                 requestBody.contains(ListTaskPushNotificationConfigRequest.METHOD) ||
-                requestBody.contains(DeleteTaskPushNotificationConfigRequest.METHOD);
+                requestBody.contains(DeleteTaskPushNotificationConfigRequest.METHOD) ||
+                requestBody.contains(GetAuthenticatedExtendedCardRequest.METHOD);
     }
 
     private static void putAcceptHeader(ContainerRequestContext requestContext, String mediaType) {

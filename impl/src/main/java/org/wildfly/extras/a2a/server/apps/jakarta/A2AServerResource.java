@@ -33,6 +33,7 @@ import io.a2a.server.util.async.Internal;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskRequest;
 import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
+import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
 import io.a2a.spec.GetTaskPushNotificationConfigRequest;
 import io.a2a.spec.GetTaskRequest;
 import io.a2a.spec.IdJsonMappingException;
@@ -129,37 +130,10 @@ import org.slf4j.LoggerFactory;
      * @return the agent card
      */
     @GET
-    @Path("/.well-known/agent.json")
+    @Path("/.well-known/agent-card.json")
     @Produces(MediaType.APPLICATION_JSON)
     public AgentCard getAgentCard() {
         return jsonRpcHandler.getAgentCard();
-    }
-
-    /**
-     * Handles incoming GET requests to the authenticated extended agent card endpoint.
-     * Returns the agent card in JSON format.
-     *
-     * @return the authenticated extended agent card
-     */
-    @GET
-    @Path("/agent/authenticatedExtendedCard")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAuthenticatedExtendedAgentCard() {
-        // TODO need to add authentication for this endpoint
-        // https://github.com/a2aproject/a2a-java/issues/77
-        if (! jsonRpcHandler.getAgentCard().supportsAuthenticatedExtendedCard()) {
-            JSONErrorResponse errorResponse = new JSONErrorResponse("Extended agent card not supported or not enabled.");
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(errorResponse).build();
-        }
-        if (! extendedAgentCard.isResolvable()) {
-            JSONErrorResponse errorResponse = new JSONErrorResponse("Authenticated extended agent card is supported but not configured on the server.");
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity(errorResponse).build();
-        }
-        return Response.ok(extendedAgentCard.get())
-                .type(MediaType.APPLICATION_JSON)
-                .build();
     }
 
     private JSONRPCResponse<?> processNonStreamingRequest(NonStreamingJSONRPCRequest<?> request,
@@ -178,6 +152,8 @@ import org.slf4j.LoggerFactory;
             return jsonRpcHandler.listPushNotificationConfig(req, context);
         } else if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.deletePushNotificationConfig(req, context);
+        } else if (request instanceof GetAuthenticatedExtendedCardRequest req) {
+            return jsonRpcHandler.onGetAuthenticatedExtendedCardRequest(req, context);
         } else {
             return generateErrorResponse(request, new UnsupportedOperationError());
         }

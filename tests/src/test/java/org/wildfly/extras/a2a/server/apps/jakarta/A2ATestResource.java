@@ -83,6 +83,7 @@ public class A2ATestResource {
 
     @POST
     @Path("/queue/enqueueTaskStatusUpdateEvent/{taskId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response enqueueTaskStatusUpdateEvent(@PathParam("taskId") String taskId, String body) throws Exception {
         TaskStatusUpdateEvent event = Utils.OBJECT_MAPPER.readValue(body, TaskStatusUpdateEvent.class);
         testUtilsBean.enqueueEvent(taskId, event);
@@ -91,6 +92,7 @@ public class A2ATestResource {
 
     @POST
     @Path("/queue/enqueueTaskArtifactUpdateEvent/{taskId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response enqueueTaskArtifactUpdateEvent(@PathParam("taskId") String taskId, String body) throws Exception {
         TaskArtifactUpdateEvent event = Utils.OBJECT_MAPPER.readValue(body, TaskArtifactUpdateEvent.class);
         testUtilsBean.enqueueEvent(taskId, event);
