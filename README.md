@@ -43,6 +43,13 @@ To run the TCK, build the full project
 mvn clean install -DskipTests
 ```
 
+Set the following environment variables:
+
+```
+export SUT_JSONRPC_URL=http://localhost:8080
+export SUT_GRPC_URL=localhost:9555
+```
+
 You now have a server provisioned with the `.war` deployed in the `tck/target/wildfly` folder.
 
 We can start the server using the following command:
