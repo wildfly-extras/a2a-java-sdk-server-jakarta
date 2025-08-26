@@ -12,6 +12,8 @@ env:
   UV_SYSTEM_PYTHON: 1
   SUT_JSONRPC_URL: http://localhost:8080
   SUT_GRPC_URL: http://localhost:9555
+  # Longer timeout is needed to receive the events for test_streaming_methods.py::test_tasks_resubscribe
+  TCK_STREAMING_TIMEOUT: 4.0
 
 
 # Only run the latest job
