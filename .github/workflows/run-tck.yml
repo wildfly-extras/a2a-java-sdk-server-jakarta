@@ -11,6 +11,7 @@ env:
   # Tells uv to not need a venv, and instead use system
   UV_SYSTEM_PYTHON: 1
   SUT_JSONRPC_URL: http://localhost:8080
+  SUT_GRPC_URL: http://localhost:9555
 
 
 # Only run the latest job
@@ -68,7 +69,7 @@ jobs:
           mvn wildfly:start -B -Dversion.sdk=${SDK_VERSION} -pl tck -Dstartup-timeout=120
       - name: Run TCK
         run: |
-          ./run_tck.py --sut-url ${SUT_JSONRPC_URL} --category all --transports jsonrpc --compliance-report report.json
+          ./run_tck.py --sut-url ${SUT_JSONRPC_URL} --category all --transports jsonrpc,grpc --compliance-report report.json
         working-directory: a2a-tck
       - name: Start the WildFly SUT
         run: |
