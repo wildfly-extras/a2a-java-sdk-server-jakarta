@@ -5,9 +5,11 @@ import java.io.File;
 import java.util.List;
 
 import io.a2a.A2A;
+import io.a2a.client.http.A2AHttpClient;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.apps.common.AbstractA2AServerTest;
 import io.a2a.spec.Event;
+import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
 import io.a2a.util.Assert;
 import mutiny.zero.ZeroPublisher;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -26,6 +28,16 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
         super(8080);
     }
 
+    @Override
+    protected String getTransportProtocol() {
+        return "JSONRPC";
+    }
+
+    @Override
+    protected String getTransportUrl() {
+        return "http://localhost:8080";
+    }
+
     @Deployment
     public static WebArchive createTestArchive() throws Exception {
         final JavaArchive[] libraries = List.of(
@@ -33,10 +45,14 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                 getJarForClass(A2A.class),
                 // a2a-java-sdk-common.jar
                 getJarForClass(Assert.class),
+                // a2a-java-sdk-http-client
+                getJarForClass(A2AHttpClient.class),
                 // a2a-java-sdk-server-common.jar
                 getJarForClass(PublicAgentCard.class),
                 // a2a-java-sdk-spec.jar
                 getJarForClass(Event.class),
+                // a2a-java-sdk-transport-jsonrpc
+                getJarForClass(JSONRPCHandler.class),
                 // mutiny-zero.jar. This is provided by some WildFly layers, but not always, and not in
                 // the server provisioned by Glow when inspecting our war
                 getJarForClass(ZeroPublisher.class)).toArray(new JavaArchive[0]);

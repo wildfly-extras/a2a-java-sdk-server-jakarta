@@ -45,9 +45,11 @@
     <properties>
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <version.wildfly>36.0.1.Final</version.wildfly>
-        <version.sdk>${project.version}</version.sdk>
+        <version.sdk>0.3.0.Beta1-SNAPSHOT</version.sdk>
         <!-- This needs to be same version as used by the sdk -->
         <version.mutiny-zero>1.1.1</version.mutiny-zero>
+        <!-- gRPC version matching the a2a-java-sdk -->
+        <version.grpc>1.73.0</version.grpc>
 
         <version.jboss-commons-logging>1.0.0.Final</version.jboss-commons-logging>
         <version.hamcrest>2.2</version.hamcrest>
@@ -58,6 +60,7 @@
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
         <version.shrinkwrap.resolvers>3.3.4</version.shrinkwrap.resolvers>
         <version.rest-assured>5.5.5</version.rest-assured>
+        <version.wildfly.grpc>0.1.12.Final</version.wildfly.grpc>
 
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <arquillian.java.vm.args></arquillian.java.vm.args>
@@ -119,6 +122,21 @@
             </dependency>
             <dependency>
                 <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-spec-grpc</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-transport-grpc</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
                 <artifactId>a2a-tck-server</artifactId>
                 <version>${version.sdk}</version>
             </dependency>
@@ -161,6 +179,37 @@
                 <artifactId>hamcrest</artifactId>
                 <version>${version.hamcrest}</version>
                 <scope>test</scope>
+            </dependency>
+            <!-- gRPC dependencies -->
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-protobuf</artifactId>
+                <version>${version.grpc}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-stub</artifactId>
+                <version>${version.grpc}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-netty</artifactId>
+                <version>${version.grpc}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-netty-shaded</artifactId>
+                <version>${version.grpc}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>4.31.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>failureaccess</artifactId>
+                <version>1.0.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -249,9 +298,11 @@
         </pluginManagement>
     </build>
     <modules>
+        <module>grpc</module>
         <module>impl</module>
         <module>tck</module>
         <module>tests</module>
+        <module>tests-grpc</module>
     </modules>
     <profiles>
         <profile>

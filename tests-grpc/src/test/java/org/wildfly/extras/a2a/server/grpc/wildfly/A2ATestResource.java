@@ -1,4 +1,4 @@
-package org.wildfly.extras.a2a.server.apps.jakarta;
+package org.wildfly.extras.a2a.server.grpc.wildfly;
 
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
@@ -23,6 +23,7 @@ import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
+import io.a2a.transport.grpc.handler.GrpcHandler;
 import io.a2a.util.Utils;
 
 @Path("/test")
@@ -35,7 +36,7 @@ public class A2ATestResource {
 
     @PostConstruct
     public void init() {
-        A2AServerResource.setStreamingIsSubscribedRunnable(streamingSubscribedCount::incrementAndGet);
+        GrpcHandler.setStreamingSubscribedRunnable(streamingSubscribedCount::incrementAndGet);
     }
 
 

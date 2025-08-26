@@ -29,7 +29,6 @@ import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.auth.User;
-import io.a2a.server.requesthandlers.JSONRPCHandler;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskRequest;
@@ -56,11 +55,12 @@ import io.a2a.spec.SetTaskPushNotificationConfigRequest;
 import io.a2a.spec.StreamingJSONRPCRequest;
 import io.a2a.spec.TaskResubscriptionRequest;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path("/")
-public class A2AServerResource {
+    public class A2AServerResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(A2AServerResource.class);
 
