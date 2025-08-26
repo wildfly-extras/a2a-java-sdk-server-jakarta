@@ -22,7 +22,6 @@
             <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-transport-grpc</artifactId>
             <version>${version.sdk}</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Jakarta APIs needed for CDI and annotation support -->
