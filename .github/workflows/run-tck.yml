@@ -10,10 +10,6 @@ env:
   TCK_VERSION: 0.3.0.alpha
   # Tells uv to not need a venv, and instead use system
   UV_SYSTEM_PYTHON: 1
-  SUT_JSONRPC_URL: http://localhost:8080
-  SUT_GRPC_URL: http://localhost:9555
-  # Longer timeout is needed to receive the events for test_streaming_methods.py::test_tasks_resubscribe
-  TCK_STREAMING_TIMEOUT: 4.0
 
 
 # Only run the latest job
@@ -68,8 +64,11 @@ jobs:
         working-directory: a2a-tck
       - name: Start the WildFly SUT
         run: |
-          mvn wildfly:start -B -Dversion.sdk=${SDK_VERSION} -pl tck -Dstartup-timeout=120 -Dwildfly.serverArgs="--stability=preview"
+          SUT_JSONRPC_URL=http://localhost:8080 SUT_GRPC_URL=http://localhost:9555 mvn wildfly:start -B -Dversion.sdk=${SDK_VERSION} -pl tck -Dstartup-timeout=120 -Dwildfly.serverArgs="--stability=preview"
       - name: Run TCK
+        env:
+          SUT_JSONRPC_URL: http://localhost:8080
+          TCK_STREAMING_TIMEOUT: 4.0
         run: |
           ./run_tck.py --sut-url ${SUT_JSONRPC_URL} --category all --transports jsonrpc,grpc --compliance-report report.json
         working-directory: a2a-tck

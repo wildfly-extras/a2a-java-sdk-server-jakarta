@@ -43,21 +43,18 @@ To run the TCK, build the full project
 mvn clean install -DskipTests
 ```
 
-Set the following environment variables:
-
-```
-export SUT_JSONRPC_URL=http://localhost:8080
-export SUT_GRPC_URL=localhost:9555
-```
-
 You now have a server provisioned with the `.war` deployed in the `tck/target/wildfly` folder.
 
 We can start the server using the following command:
 
 ```bash
-./tck/target/wildfly/bin/standalone.sh --stability=preview
+SUT_JSONRPC_URL=http://localhost:8080 SUT_GRPC_URL=http://localhost:9555 tck/target/wildfly/bin/standalone.sh --stability=preview
 ```
+
 `--stability=preview` is needed since the TCK server is provisioned with the gRPC subsystem, which is currently at the `preview` stability level.
+
+The `SUT_JSONRPC_URL` and `SUT_GRPC_URL` are used by the TCK server's `AgentCardProducer` to specify the transports supported by the server agent.
 
 Once the server is up and running, run the TCK with the instructions in [a2aproject/a2a-tck](https://github.com/a2aproject/a2a-tck). Make sure you check out the correct tag of `a2aproject/a2a-tck` for the protocol version we are targeting.
 
+Be sure to set `TCK_STREAMING_TIMEOUT=4.0` when running the TCK to ensure the tests wait long enough to receive the events for streaming methods.
