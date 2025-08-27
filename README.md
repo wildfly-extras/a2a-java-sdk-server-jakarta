@@ -48,7 +48,13 @@ You now have a server provisioned with the `.war` deployed in the `tck/target/wi
 We can start the server using the following command:
 
 ```bash
-./tck/target/wildfly/bin/standalone.sh
+SUT_JSONRPC_URL=http://localhost:8080 SUT_GRPC_URL=http://localhost:9555 tck/target/wildfly/bin/standalone.sh --stability=preview
 ```
-Once the server is up and running, run the TCK with the instructions in [a2aproject/a2a-tck](a2aproject/a2a-tck). Make sure you check out the correct tag of `a2aproject/a2a-tck` for the protocol version we are targeting.
 
+`--stability=preview` is needed since the TCK server is provisioned with the gRPC subsystem, which is currently at the `preview` stability level.
+
+The `SUT_JSONRPC_URL` and `SUT_GRPC_URL` are used by the TCK server's `AgentCardProducer` to specify the transports supported by the server agent.
+
+Once the server is up and running, run the TCK with the instructions in [a2aproject/a2a-tck](https://github.com/a2aproject/a2a-tck). Make sure you check out the correct tag of `a2aproject/a2a-tck` for the protocol version we are targeting.
+
+Be sure to set `TCK_STREAMING_TIMEOUT=4.0` when running the TCK to ensure the tests wait long enough to receive the events for streaming methods.

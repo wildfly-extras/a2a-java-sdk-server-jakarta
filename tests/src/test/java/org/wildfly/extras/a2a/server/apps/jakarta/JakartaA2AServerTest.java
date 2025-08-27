@@ -9,6 +9,7 @@ import io.a2a.client.http.A2AHttpClient;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.apps.common.AbstractA2AServerTest;
 import io.a2a.spec.Event;
+import io.a2a.spec.TransportProtocol;
 import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
 import io.a2a.util.Assert;
 import mutiny.zero.ZeroPublisher;
@@ -24,13 +25,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 @RunAsClient
 public class JakartaA2AServerTest extends AbstractA2AServerTest {
 
-    public JakartaA2AServerTest() {
-        super(8080);
-    }
-
     @Override
     protected String getTransportProtocol() {
-        return "JSONRPC";
+        return TransportProtocol.JSONRPC.asString();
     }
 
     @Override
@@ -38,11 +35,13 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
         return "http://localhost:8080";
     }
 
+    public JakartaA2AServerTest() {
+        super(8080);
+    }
+
     @Deployment
     public static WebArchive createTestArchive() throws Exception {
         final JavaArchive[] libraries = List.of(
-                // a2a-java-sdk-client.jar
-                getJarForClass(A2A.class),
                 // a2a-java-sdk-common.jar
                 getJarForClass(Assert.class),
                 // a2a-java-sdk-http-client
@@ -75,4 +74,5 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
         File f = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
         return ShrinkWrap.createFromZipFile(JavaArchive.class, f);
     }
+
 }
