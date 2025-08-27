@@ -76,5 +76,11 @@ jobs:
       - name: Start the WildFly SUT
         run: |
           mvn wildfly:shutdown
-
+      - name: Upload tck server.log
+        uses: actions/upload-artifact@v4
+        if: always() # Upload even if previous steps fail
+        with:
+          name: tck-server-log
+          path: tck/target/wildfly/standalone/log/server.log
+          retention-days: 5
           
