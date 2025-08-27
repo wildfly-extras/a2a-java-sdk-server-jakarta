@@ -45,10 +45,15 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-server-jakarta-grpc</artifactId>
             <version>${project.version}</version>
+            <!-- Exclude gRPC core libraries as they are provided by WildFly's gRPC feature pack -->
             <exclusions>
                 <exclusion>
-                    <groupId>*</groupId>
+                    <groupId>io.grpc</groupId>
                     <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
