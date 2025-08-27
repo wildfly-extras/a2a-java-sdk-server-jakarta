@@ -68,7 +68,7 @@ jobs:
         working-directory: a2a-tck
       - name: Start the WildFly SUT
         run: |
-          mvn wildfly:start -B -Dversion.sdk=${SDK_VERSION} -pl tck -Dstartup-timeout=120
+          mvn wildfly:start -B -Dversion.sdk=${SDK_VERSION} -pl tck -Dstartup-timeout=120 -Dwildfly.serverArgs="--stability=preview"
       - name: Run TCK
         run: |
           ./run_tck.py --sut-url ${SUT_JSONRPC_URL} --category all --transports jsonrpc,grpc --compliance-report report.json

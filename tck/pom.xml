@@ -45,21 +45,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>a2a-java-sdk-server-jakarta-grpc</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <!--
-                    Exclude these transitive dependencies since we are deploying the TCK in WildFly,
-                    where the server provides these dependencies.
-                    Other servlet containers/application servers may provide other things.
-                -->
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.datatype</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
@@ -99,11 +85,34 @@
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
                 <configuration>
+                     <feature-packs>
+                        <feature-pack>
+                            <groupId>org.wildfly</groupId>
+                            <artifactId>wildfly-galleon-pack</artifactId>
+                            <version>${version.wildfly}</version>
+                        </feature-pack>
+                        <!-- Add gRPC feature pack -->
+                        <feature-pack>
+                            <groupId>org.wildfly.extras.grpc</groupId>
+                            <artifactId>wildfly-grpc-feature-pack</artifactId>
+                            <version>${version.wildfly.grpc}</version>
+                        </feature-pack>
+                    </feature-packs>
                     <discover-provisioning-info>
+                        <add-ons>
+                            <add-on>grpc</add-on>
+                        </add-ons>
                     </discover-provisioning-info>
                     <jboss-home>${jboss.home}</jboss-home>
                     <name>ROOT.war</name>
                     <provisioning-dir>${jboss.home}</provisioning-dir>
+                    <!-- Set stability level to preview for gRPC feature pack -->
+                    <galleon-options>
+                        <jboss-fork-embedded>true</jboss-fork-embedded>
+                        <stability-level>preview</stability-level>
+                    </galleon-options>
+                    <!-- CLI scripts are incompatible with preview stability level during provisioning -->
+                    <!--
                     <packagingScripts>
                         <packaging-script>
                             <scripts>
@@ -111,6 +120,7 @@
                             </scripts>
                         </packaging-script>
                     </packagingScripts>
+                    -->
                 </configuration>
                 <executions>
                     <execution>
