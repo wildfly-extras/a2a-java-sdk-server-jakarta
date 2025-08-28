@@ -5,7 +5,10 @@ import java.io.File;
 import java.util.List;
 
 import io.a2a.A2A;
+import io.a2a.client.ClientBuilder;
 import io.a2a.client.http.A2AHttpClient;
+import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
+import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.apps.common.AbstractA2AServerTest;
 import io.a2a.spec.Event;
@@ -30,9 +33,15 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
         return TransportProtocol.JSONRPC.asString();
     }
 
+
     @Override
     protected String getTransportUrl() {
         return "http://localhost:8080";
+    }
+
+    @Override
+    protected void configureTransport(ClientBuilder builder) {
+        builder.withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder());
     }
 
     public JakartaA2AServerTest() {

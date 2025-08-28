@@ -34,6 +34,11 @@
         <!-- A2A dependencies -->
         <dependency>
             <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-spec-grpc</artifactId>
             <scope>test</scope>
         </dependency>
