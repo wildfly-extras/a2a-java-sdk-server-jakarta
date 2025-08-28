@@ -179,6 +179,21 @@
 
     <build>
         <plugins>
+           <plugin>
+               <!--
+                    Disable the nxrm3 plugin for this test module so that we don't deploy it.
+                    Otherwise, we get errors on validation due to missing sources + javadoc
+                -->
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nxrm3-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>nexus-deploy</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+           </plugin>
+
             <!-- WildFly Glow plugin for automatic layer detection -->
             <plugin>
                 <groupId>org.wildfly.glow</groupId>
