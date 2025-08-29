@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly.extras.a2a</groupId>
+        <groupId>org.wildfly.a2a</groupId>
         <artifactId>a2a-java-sdk-server-jakarta-parent</artifactId>
         <version>0.3.0.Beta1-SNAPSHOT</version>
     </parent>
@@ -127,12 +127,22 @@
         </dependency>
     </dependencies>
     <build>
-        <pluginManagement>
-            <plugins>
-
-            </plugins>
-        </pluginManagement>
         <plugins>
+           <plugin>
+               <!--
+                    Disable the nxrm3 plugin for this test module so that we don't deploy it.
+                    Otherwise, we get errors on validation due to missing sources + javadoc
+                -->
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nxrm3-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>nexus-deploy</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+           </plugin>
+
            <plugin>
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-arquillian-plugin</artifactId>
