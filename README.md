@@ -28,11 +28,11 @@ The [tck/pom.xml](./tck/pom.xml) is a good example of how to package an A2A appl
 
 In this case we have the following dependencies:
 
-* `org.wildfly.extras.a2a:a2a-java-sdk-jakarta` - this is the main dependency which transitively pulls in all the dependencies from the A2A Java SDK project. 
+* `org.wildfly.a2a:a2a-java-sdk-jakarta-jsonrpc` - this is the main dependency which transitively pulls in all the dependencies from the A2A Java SDK project. 
     * Since some of these dependencies are provided by WildFly already, we exclude those so they do not become part of the `.war`, in order to avoid inconsistencies.
-* `jakarta.ws.rs:jakarta.ws.rs-api` - this is not part of the dependencies brought in via `org.wildfly.extras.a2a:a2a-java-sdk-jakarta` but is needed to compile the TCK module. Since it is provided by WildFly, we make the scope `provided` so it is not included in the `.war`.   
+* `jakarta.ws.rs:jakarta.ws.rs-api` - this is not part of the dependencies brought in via `org.wildfly.a2a:a2a-java-sdk-jakarta-jsonrpc` but is needed to compile the TCK module. Since it is provided by WildFly, we make the scope `provided` so it is not included in the `.war`.   
 * `io.github.a2asdk:a2a-tck-server` - this is the application, which contains the `AgentExecutor` and `AgentCard` implementations for the TCK. In your case, they will most likely be implemented in the project you use to create the `.war`. 
-    * In this case we exclude all transitive dependencies, since we are doing the main dependency management via the `org.wildfly.extras.a2a:a2a-java-sdk-jakarta` dependency.
+    * In this case we exclude all transitive dependencies, since we are doing the main dependency management via the `org.wildfly.a2a:a2a-java-sdk-jakarta-jsonrpc` dependency.
 
 ## Running the TCK
 

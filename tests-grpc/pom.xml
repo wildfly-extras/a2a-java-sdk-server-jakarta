@@ -71,7 +71,7 @@
         <!-- Add WildFly Jakarta implementation dependency -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta</artifactId>
+            <artifactId>a2a-java-sdk-jakarta-jsonrpc</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
