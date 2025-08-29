@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-server-jakarta-parent</artifactId>
+        <artifactId>a2a-java-sdk-jakarta-tests-parent</artifactId>
         <version>0.3.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>a2a-java-sdk-server-jakarta-tests-grpc</artifactId>
+    <artifactId>a2a-java-sdk-jakarta-tests-grpc</artifactId>
 
     <packaging>jar</packaging>
 
@@ -26,7 +26,7 @@
         <!-- Our gRPC module -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-server-jakarta-grpc</artifactId>
+            <artifactId>a2a-java-sdk-jakarta-grpc</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -71,7 +71,7 @@
         <!-- Add WildFly Jakarta implementation dependency -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-server-jakarta</artifactId>
+            <artifactId>a2a-java-sdk-jakarta-jsonrpc</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
@@ -179,21 +179,6 @@
 
     <build>
         <plugins>
-           <plugin>
-               <!--
-                    Disable the nxrm3 plugin for this test module so that we don't deploy it.
-                    Otherwise, we get errors on validation due to missing sources + javadoc
-                -->
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nxrm3-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>nexus-deploy</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
-           </plugin>
-
             <!-- WildFly Glow plugin for automatic layer detection -->
             <plugin>
                 <groupId>org.wildfly.glow</groupId>

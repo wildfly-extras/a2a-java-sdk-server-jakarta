@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-server-jakarta-parent</artifactId>
+        <artifactId>a2a-java-sdk-jakarta-parent</artifactId>
         <version>0.3.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>a2a-java-sdk-server-jakarta-tck-wildfly</artifactId>
+    <artifactId>a2a-java-sdk-jakarta-tck-wildfly</artifactId>
 
     <packaging>war</packaging>
 
@@ -23,7 +23,7 @@
         -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-server-jakarta</artifactId>
+            <artifactId>a2a-java-sdk-jakarta-jsonrpc</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <!--
@@ -43,7 +43,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-server-jakarta-grpc</artifactId>
+            <artifactId>a2a-java-sdk-jakarta-grpc</artifactId>
             <version>${project.version}</version>
             <!-- Exclude gRPC core libraries as they are provided by WildFly's gRPC feature pack -->
             <exclusions>
@@ -74,7 +74,7 @@
             <exclusions>
                 <!--
                     Exclude all dependencies, since we are managing what is included in the jar in the
-                    org.wildfly.extras.a2a:ctId>a2a-java-sdk-server-jakarta dependency.
+                    org.wildfly.extras.a2a:ctId>a2a-java-sdk-jakarta dependency.
                 -->
                 <exclusion>
                     <groupId>*</groupId>

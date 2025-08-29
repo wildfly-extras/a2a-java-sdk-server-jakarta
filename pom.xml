@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>org.wildfly.a2a</groupId>
-    <artifactId>a2a-java-sdk-server-jakarta-parent</artifactId>
+    <artifactId>a2a-java-sdk-jakarta-parent</artifactId>
     <version>0.3.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
@@ -19,7 +19,7 @@
     <name>WildFly Extras - Java A2A SDK for Jakarta Parent</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - Parent</description>
 
-    <url>https://github.com/wildfly-extras/a2a-java-sdk-server-jakarta</url>
+    <url>https://github.com/wildfly-extras/a2a-java-sdk-jakarta</url>
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
@@ -29,17 +29,17 @@
 
     <developers>
         <developer>
-            <id>a2a-java-sdk-server-jakarta</id>
+            <id>a2a-java-sdk-jakarta</id>
             <name>The WildFly developers</name>
             <organization>wildfly-extras</organization>
-            <organizationUrl>https://github.com/wildfly-extras/a2a-java-sdk-server-jakarta</organizationUrl>
+            <organizationUrl>https://github.com/wildfly-extras/a2a-java-sdk-jakarta</organizationUrl>
         </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/wildfly-extras/a2a-java-sdk-server-jakarta.git</connection>
-        <developerConnection>scm:git:ssh://github.com:wildfly-extras/a2a-java-sdk-server-jakarta.git</developerConnection>
-        <url>https://github.com/wildfly-extras/a2a-java-sdk-server-jakarta</url>
+        <connection>scm:git:git://github.com/wildfly-extras/a2a-java-sdk-jakarta.git</connection>
+        <developerConnection>scm:git:ssh://github.com:wildfly-extras/a2a-java-sdk-jakarta.git</developerConnection>
+        <url>https://github.com/wildfly-extras/a2a-java-sdk-jakarta</url>
     </scm>
 
     <properties>
@@ -81,7 +81,7 @@
         <nexus.serverId>jboss</nexus.serverId>
         <nexus.repository.release>wildfly-extras</nexus.repository.release>
         <nexus.repository.staging>wildfly-extras-staging</nexus.repository.staging>
-        <nexus.staging.tag>a2a-java-sdk-server-jakarta-${project.version}</nexus.staging.tag>
+        <nexus.staging.tag>a2a-java-sdk-jakarta-${project.version}</nexus.staging.tag>
 
         <!--
             URL of Maven repository to deploy to. There is a -Pstaging-deploy profile to push to a
@@ -313,11 +313,10 @@
         </pluginManagement>
     </build>
     <modules>
-        <module>grpc</module>
-        <module>impl</module>
+        <module>impl/jsonrpc</module>
+        <module>impl/grpc</module>
         <module>tck</module>
         <module>tests</module>
-        <module>tests-grpc</module>
     </modules>
     <profiles>
         <profile>
