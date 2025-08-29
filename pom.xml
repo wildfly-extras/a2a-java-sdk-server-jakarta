@@ -313,8 +313,8 @@
         </pluginManagement>
     </build>
     <modules>
-        <module>grpc</module>
-        <module>impl</module>
+        <module>impl/jsonrpc</module>
+        <module>impl/grpc</module>
         <module>tck</module>
         <module>tests</module>
         <module>tests-grpc</module>
