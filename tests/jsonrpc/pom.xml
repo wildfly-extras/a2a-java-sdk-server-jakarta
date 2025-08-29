@@ -8,9 +8,10 @@
         <groupId>org.wildfly.a2a</groupId>
         <artifactId>a2a-java-sdk-jakarta-parent</artifactId>
         <version>0.3.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>a2a-java-sdk-jakarta-tests</artifactId>
+    <artifactId>a2a-java-sdk-jakarta-tests-jsonrpc</artifactId>
 
     <packaging>jar</packaging>
 
