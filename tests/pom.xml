@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.a2a</groupId>
+        <artifactId>a2a-java-sdk-jakarta-parent</artifactId>
+        <version>0.3.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>a2a-java-sdk-jakarta-tests-parent</artifactId>
+
+    <packaging>pom</packaging>
+
+    <name>WildFly Extras - Java A2A SDK for Jakarta - Tests - Parent</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - Tests - Parent</description>
+
+    <build>
+        <plugins>
+           <plugin>
+               <!--
+                    Disable the nxrm3 plugin for the test modules so that they don't get deployed.
+                    Otherwise, we get errors on validation due to missing sources + javadoc.
+                -->
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nxrm3-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>nexus-deploy</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+           </plugin>
+        </plugins>
+    </build>
+    <modules>
+        <module>jsonrpc</module>
+        <module>grpc</module>
+    </modules>
+</project>

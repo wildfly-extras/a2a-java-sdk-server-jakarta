@@ -6,9 +6,8 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-jakarta-parent</artifactId>
+        <artifactId>a2a-java-sdk-jakarta-tests-parent</artifactId>
         <version>0.3.0.Beta1-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>a2a-java-sdk-jakarta-tests-grpc</artifactId>
@@ -180,21 +179,6 @@
 
     <build>
         <plugins>
-           <plugin>
-               <!--
-                    Disable the nxrm3 plugin for this test module so that we don't deploy it.
-                    Otherwise, we get errors on validation due to missing sources + javadoc
-                -->
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nxrm3-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>nexus-deploy</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
-           </plugin>
-
             <!-- WildFly Glow plugin for automatic layer detection -->
             <plugin>
                 <groupId>org.wildfly.glow</groupId>

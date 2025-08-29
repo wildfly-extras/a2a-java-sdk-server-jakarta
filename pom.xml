@@ -316,8 +316,7 @@
         <module>impl/jsonrpc</module>
         <module>impl/grpc</module>
         <module>tck</module>
-        <module>tests/jsonrpc</module>
-        <module>tests/grpc</module>
+        <module>tests</module>
     </modules>
     <profiles>
         <profile>
