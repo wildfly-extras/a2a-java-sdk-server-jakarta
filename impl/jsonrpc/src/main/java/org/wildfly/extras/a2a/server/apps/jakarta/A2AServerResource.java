@@ -1,14 +1,19 @@
 package org.wildfly.extras.a2a.server.apps.jakarta;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicLong;
 
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -20,11 +25,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import jakarta.ws.rs.sse.Sse;
-import jakarta.ws.rs.sse.SseEventSink;
+import jakarta.ws.rs.ext.Providers;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
@@ -40,7 +45,6 @@ import io.a2a.spec.IdJsonMappingException;
 import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidParamsJsonMappingException;
 import io.a2a.spec.InvalidRequestError;
-import io.a2a.spec.JSONErrorResponse;
 import io.a2a.spec.JSONParseError;
 import io.a2a.spec.JSONRPCError;
 import io.a2a.spec.JSONRPCErrorResponse;
@@ -108,19 +112,53 @@ import org.slf4j.LoggerFactory;
 
     /**
      * Handles incoming POST requests to the main A2A endpoint that involve Server-Sent Events (SSE).
-     * Dispatches the request to the appropriate JSON-RPC handler method and returns the response.
+     * Uses custom SSE response handling to avoid JAX-RS SSE compatibility issues with async publishers.
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.SERVER_SENT_EVENTS)
     public void handleStreamingRequests(
-            StreamingJSONRPCRequest<?> request, @Context SseEventSink sseEventSink,
-            @Context Sse sse, @Context HttpServletRequest httpRequest,
-            @Context SecurityContext securityContext) {
+            StreamingJSONRPCRequest<?> request, 
+            @Context HttpServletResponse response,
+            @Context HttpServletRequest httpRequest,
+            @Context SecurityContext securityContext,
+            @Context Providers providers) throws IOException {
+        
         ServerCallContext context = createCallContext(httpRequest, securityContext);
-        LOGGER.debug("Handling streaming request");
-        executor.execute(() -> processStreamingRequest(request, sseEventSink, sse, context));
-        LOGGER.debug("Submitted streaming request for async processing");
+        LOGGER.debug("Handling streaming request with custom SSE response");
+        
+        // Set SSE headers manually for proper streaming
+        response.setContentType("text/event-stream");
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("Connection", "keep-alive");
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        
+        // Get the ObjectMapper from JAX-RS context
+        ObjectMapper objectMapper = providers.getContextResolver(ObjectMapper.class, MediaType.APPLICATION_JSON_TYPE)
+                .getContext(JSONRPCResponse.class);
+        if (objectMapper == null) {
+            // Fallback to properly configured ObjectMapper if context resolver doesn't provide one
+            objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+            objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        }
+        
+        // Get the publisher synchronously to avoid connection closure issues
+        Flow.Publisher<? extends JSONRPCResponse<?>> publisher = createStreamingPublisher(request, context);
+        LOGGER.debug("Created streaming publisher: {}", publisher);
+        
+        if (publisher != null) {
+            // Handle the streaming response with custom SSE formatting
+            LOGGER.debug("Handling custom SSE response for publisher: {}", publisher);
+            handleCustomSSEResponse(publisher, response, objectMapper);
+        } else {
+            // Handle unsupported request types
+            LOGGER.debug("Unsupported streaming request type: {}", request.getClass().getSimpleName());
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unsupported streaming request type");
+        }
+        
+        LOGGER.debug("Completed streaming request processing");
     }
 
     /**
@@ -159,26 +197,42 @@ import org.slf4j.LoggerFactory;
         }
     }
 
-    private void processStreamingRequest(StreamingJSONRPCRequest<?> request, SseEventSink sseEventSink, Sse sse,
-                                         ServerCallContext context) {
-        Flow.Publisher<? extends JSONRPCResponse<?>> publisher;
+    /**
+     * Creates a streaming publisher for the given request.
+     * This method runs synchronously to avoid connection closure issues.
+     */
+    private Flow.Publisher<? extends JSONRPCResponse<?>> createStreamingPublisher(StreamingJSONRPCRequest<?> request, 
+                                                                                 ServerCallContext context) {
         if (request instanceof SendStreamingMessageRequest req) {
-            publisher = jsonRpcHandler.onMessageSendStream(req, context);
-            handleStreamingResponse(publisher, sseEventSink, sse);
+            return jsonRpcHandler.onMessageSendStream(req, context);
         } else if (request instanceof TaskResubscriptionRequest req) {
-            publisher = jsonRpcHandler.onResubscribeToTask(req, context);
-            handleStreamingResponse(publisher, sseEventSink, sse);
+            return jsonRpcHandler.onResubscribeToTask(req, context);
+        } else {
+            return null; // Unsupported request type
         }
     }
 
-    private void handleStreamingResponse(Flow.Publisher<? extends JSONRPCResponse<?>> publisher, SseEventSink sseEventSink, Sse sse) {
+    /**
+     * Handles the streaming response using custom SSE formatting.
+     * This approach avoids JAX-RS SSE compatibility issues with async publishers.
+     */
+    private void handleCustomSSEResponse(Flow.Publisher<? extends JSONRPCResponse<?>> publisher, 
+                                       HttpServletResponse response, ObjectMapper objectMapper) throws IOException {
+        
+        PrintWriter writer = response.getWriter();
+        AtomicLong eventId = new AtomicLong(0);
+        CompletableFuture<Void> streamingComplete = new CompletableFuture<>();
+        
         publisher.subscribe(new Flow.Subscriber<JSONRPCResponse<?>>() {
+            @SuppressWarnings("unused") // Stored for potential future use (e.g., cancellation)
             private Flow.Subscription subscription;
 
             @Override
             public void onSubscribe(Flow.Subscription subscription) {
+                LOGGER.debug("Custom SSE subscriber onSubscribe called");
                 this.subscription = subscription;
                 subscription.request(Long.MAX_VALUE);
+                
                 // Notify tests that we are subscribed
                 Runnable runnable = streamingIsSubscribedRunnable;
                 if (runnable != null) {
@@ -188,25 +242,56 @@ import org.slf4j.LoggerFactory;
 
             @Override
             public void onNext(JSONRPCResponse<?> item) {
-
-                sseEventSink.send(sse.newEventBuilder()
-                        .mediaType(MediaType.APPLICATION_JSON_TYPE)
-                        .data(item)
-                        .build());
+                LOGGER.debug("Custom SSE subscriber onNext called with item: {}", item);
+                try {
+                    // Format as proper SSE event (matching Quarkus format)
+                    String jsonData = objectMapper.writeValueAsString(item);
+                    long id = eventId.getAndIncrement();
+                    
+                    writer.write("data: " + jsonData + "\n");
+                    writer.write("id: " + id + "\n");
+                    writer.write("\n"); // Empty line to complete the event
+                    writer.flush();
+                    
+                    LOGGER.debug("Custom SSE event sent successfully with id: {}", id);
+                } catch (Exception e) {
+                    LOGGER.error("Error writing SSE event: {}", e.getMessage(), e);
+                    onError(e);
+                }
             }
 
             @Override
             public void onError(Throwable throwable) {
-                // TODO
-                sseEventSink.close();
+                LOGGER.debug("Custom SSE subscriber onError called: {}", throwable.getMessage(), throwable);
+                try {
+                    writer.close();
+                } catch (Exception e) {
+                    LOGGER.error("Error closing writer: {}", e.getMessage(), e);
+                }
+                streamingComplete.completeExceptionally(throwable);
             }
 
             @Override
             public void onComplete() {
-                sseEventSink.close();
+                LOGGER.debug("Custom SSE subscriber onComplete called");
+                try {
+                    writer.close();
+                } catch (Exception e) {
+                    LOGGER.error("Error closing writer: {}", e.getMessage(), e);
+                }
+                streamingComplete.complete(null);
             }
         });
+        
+        try {
+            // Wait for streaming to complete before method returns
+            streamingComplete.get();
+        } catch (Exception e) {
+            LOGGER.error("Error waiting for streaming completion: {}", e.getMessage(), e);
+            throw new IOException("Streaming failed", e);
+        }
     }
+
 
     private JSONRPCResponse<?> generateErrorResponse(JSONRPCRequest<?> request, JSONRPCError error) {
         return new JSONRPCErrorResponse(request.getId(), error);
