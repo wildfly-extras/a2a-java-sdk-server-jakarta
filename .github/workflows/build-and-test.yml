@@ -21,7 +21,17 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+      - name: Check if SDK version is SNAPSHOT
+        run: |
+          SDK_VERSION=$(mvn help:evaluate -Dexpression=version.sdk -q -DforceStdout)
+          echo "SDK_VERSION=${SDK_VERSION}" >> "$GITHUB_ENV"
+          if [[ "${SDK_VERSION}" == *"-SNAPSHOT" ]]; then
+            echo "IS_SNAPSHOT=true" >> "$GITHUB_ENV"
+          else
+            echo "IS_SNAPSHOT=false" >> "$GITHUB_ENV"
+          fi
       - name: Checkout a2a-java
+        if: env.IS_SNAPSHOT == 'true'
         uses: actions/checkout@v4
         with:
           repository: a2aproject/a2a-java
@@ -33,9 +43,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Build a2a-java with Maven, skipping tests
-        run: mvn -B install -DskipTests
+        if: env.IS_SNAPSHOT == 'true'
+        run: |
+          mvn -B install -DskipTests
         working-directory: a2a-java
       - name: Get a2a-java version and save as env var
+        if: env.IS_SNAPSHOT == 'true'
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout) 
           echo "SDK_VERSION=${VERSION}" >> "$GITHUB_ENV"
@@ -43,3 +56,13 @@ jobs:
       - name: Run tests
         run:
           mvn clean install -B -Dversion.sdk=${SDK_VERSION}
+      - name: Upload WildFly logs on test failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wildfly-logs
+          path: |
+            tests/jsonrpc/target/wildfly/standalone/log/server.log
+            tests/grpc/target/wildfly/standalone/log/server.log
+          if-no-files-found: ignore
+          retention-days: 5
