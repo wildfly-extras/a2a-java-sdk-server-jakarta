@@ -20,6 +20,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
@@ -128,12 +129,10 @@ import org.slf4j.LoggerFactory;
         LOGGER.debug("Handling streaming request with custom SSE response");
         
         // Set SSE headers manually for proper streaming
-        response.setContentType("text/event-stream");
+        response.setContentType(MediaType.SERVER_SENT_EVENTS);
         response.setCharacterEncoding("UTF-8");
-        response.setHeader("Cache-Control", "no-cache");
-        response.setHeader("Connection", "keep-alive");
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
+
         // Get the ObjectMapper from JAX-RS context
         ObjectMapper objectMapper = providers.getContextResolver(ObjectMapper.class, MediaType.APPLICATION_JSON_TYPE)
                 .getContext(JSONRPCResponse.class);
