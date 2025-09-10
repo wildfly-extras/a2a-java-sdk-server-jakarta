@@ -38,6 +38,8 @@ In the `tck/pom.xml` we enable both JSON-RPC and gRPC, and have the following de
 
 If you are deploying to WildFly and want to use gRPC, you will also need to provision the server with the gRPC feature pack. You can see how this is done in the `wildfly-maven-plugin` configuration in the `tck/pom.xml`. Since the gRPC subsystem and feature pack are currently at the `preview` stability level, you will need to start the server with the `--stability=preview` argument.
 
+There are also some [examples](./examples/README.md) that show how to package an application selecting each transport. 
+
 ## Running the TCK
 
 The project includes a TCK (Technology Compatibility Kit) that you can use to test the integration with WildFly. 

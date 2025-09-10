@@ -1,0 +1,219 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.a2a</groupId>
+        <artifactId>a2a-java-sdk-jakarta-examples-parent</artifactId>
+        <version>0.3.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>a2a-java-sdk-jakarta-example-simple-server</artifactId>
+
+    <packaging>war</packaging>
+
+    <name>WildFly Extras - Java A2A SDK for Jakarta - Example - Simple</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - TCK - WildFly Jar</description>
+
+    <properties>
+        <!--
+            Property to ensure that the default build does not provision a WildFly server.
+            Each profile will set this to 'package' and further configure the plugin.
+        -->
+        <wildfly.maven.plugin.phase>none</wildfly.maven.plugin.phase>
+    </properties>
+
+    <dependencies>
+        <!-- Dependencies needed to compile. 'provided' scope since they are provided by WildFly -->
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--
+            The core a2a-java server dependency. Default scope since it, and
+            a lot of its dependencies should be included in the war.  -->
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-server-common</artifactId>
+
+            <!-- Exclude transitive dependencies provided by WildFly -->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jakarta.inject</groupId>
+                    <artifactId>jakarta.inject-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <!--
+                WildFly specific plugin to provision a WildFly server with the functionality required to
+                run our .war file.
+                It deploys the war renamed to 'ROOT.war' so that it is deployed under the root context, i.e. under '/'.
+                By default, this will be under http://localhost:8080/.
+            -->
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <configuration>
+                     <feature-packs>
+                        <feature-pack>
+                            <groupId>org.wildfly</groupId>
+                            <artifactId>wildfly-galleon-pack</artifactId>
+                            <version>${version.wildfly}</version>
+                        </feature-pack>
+                    </feature-packs>
+                    <discover-provisioning-info/>
+                    <jboss-home>${jboss.home}</jboss-home>
+                    <name>ROOT.war</name>
+                    <provisioning-dir>${jboss.home}</provisioning-dir>
+                    <!-- Set stability level to preview for gRPC feature pack -->
+                    <galleon-options>
+                        <jboss-fork-embedded>true</jboss-fork-embedded>
+                        <!--<stability-level>preview</stability-level>-->
+                    </galleon-options>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>provisioning</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${wildfly.maven.plugin.phase}</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>jsonrpc</id>
+            <properties>
+                <!-- Enable provisioning of WildFly server. -->
+                <wildfly.maven.plugin.phase>package</wildfly.maven.plugin.phase>
+            </properties>
+
+            <dependencies>
+                <!--
+                    Include the JSONRPC Jakarta server jars
+                -->
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>a2a-java-sdk-jakarta-jsonrpc</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>grpc</id>
+            <properties>
+                <!-- Enable provisioning of WildFly server. -->
+                <wildfly.maven.plugin.phase>package</wildfly.maven.plugin.phase>
+            </properties>
+
+            <dependencies>
+                <!--
+                    Include the gRPC Jakarta server jars
+                -->
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>a2a-java-sdk-jakarta-grpc</artifactId>
+                    <version>${project.version}</version>
+                    <!-- Exclude gRPC core libraries as they are provided by WildFly's gRPC feature pack -->
+                    <exclusions>
+                        <exclusion>
+                            <groupId>io.grpc</groupId>
+                            <artifactId>*</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>com.google.protobuf</groupId>
+                            <artifactId>protobuf-java</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+
+                <!--
+                    gRPC needs JSONRPC to get the agent card.
+                    This is likely to change in the future. So for now include the
+                    JSONRCP dependencies here.
+                 -->
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>a2a-java-sdk-jakarta-jsonrpc</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- Add additional configuration to provision a server with the gRPC feature pack -->
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <configuration>
+                             <feature-packs>
+                                <!--
+                                    Still include the main WildFly feature pack, so we are not stuck
+                                    to the version used by the gRPC feature pack
+                                -->
+                                <feature-pack>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <version>${version.wildfly}</version>
+                                </feature-pack>
+                                 <!-- Add the gRPC feature pack -->
+                                <feature-pack>
+                                    <groupId>org.wildfly.extras.grpc</groupId>
+                                    <artifactId>wildfly-grpc-feature-pack</artifactId>
+                                    <version>${version.wildfly.grpc}</version>
+                                </feature-pack>
+                            </feature-packs>
+                            <discover-provisioning-info>
+                                <add-ons>
+                                    <add-on>grpc</add-on>
+                                </add-ons>
+                            </discover-provisioning-info>
+                            <!-- Set stability level to preview for gRPC feature pack -->
+                            <galleon-options>
+                                <jboss-fork-embedded>true</jboss-fork-embedded>
+                                <stability-level>preview</stability-level>
+                            </galleon-options>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>provisioning</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>${wildfly.maven.plugin.phase}</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
