@@ -1,10 +1,9 @@
-package org.wildfly.extras.a2a.server.apps.jakarta;
+package org.wildfly.extras.a2a.test.server.apps.jakarta;
 
 
 import java.io.File;
 import java.util.List;
 
-import io.a2a.A2A;
 import io.a2a.client.ClientBuilder;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
@@ -22,6 +21,7 @@ import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.wildfly.extras.a2a.server.apps.jakarta.WildflyJSONRPCTransportMetadata;
 
 
 @ArquillianTest
@@ -61,6 +61,8 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                 getJarForClass(Event.class),
                 // a2a-java-sdk-transport-jsonrpc
                 getJarForClass(JSONRPCHandler.class),
+                // a2a-java-sdk-jakarta-jsonrpc.jar - contains WildflyJSONRPCTransportMetadata
+                getJarForClass(WildflyJSONRPCTransportMetadata.class),
                 // mutiny-zero.jar. This is provided by some WildFly layers, but not always, and not in
                 // the server provisioned by Glow when inspecting our war
                 getJarForClass(ZeroPublisher.class)).toArray(new JavaArchive[0]);
@@ -70,7 +72,6 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                 .addAsLibraries(libraries)
                 // Extra dependencies needed by the tests
                 .addPackage(AbstractA2AServerTest.class.getPackage())
-                .addPackage(A2AServerResource.class.getPackage())
                 .addPackage(A2ATestResource.class.getPackage())
                 // Add deployment descriptors
                 .addAsManifestResource("META-INF/beans.xml", "beans.xml")
