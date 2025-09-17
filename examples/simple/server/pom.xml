@@ -215,5 +215,27 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>rest</id>
+            <properties>
+                <!-- Enable provisioning of WildFly server. -->
+                <wildfly.maven.plugin.phase>package</wildfly.maven.plugin.phase>
+            </properties>
+
+            <dependencies>
+                <!--
+                    Include the HTTP+JSON/REST Jakarta server jars
+                -->
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>a2a-java-sdk-jakarta-rest</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java-util</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
 </project>

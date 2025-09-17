@@ -62,6 +62,26 @@
             <artifactId>jakarta.ws.rs-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-java-sdk-jakarta-rest</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <!--
+                    Exclude these transitive dependencies since we are deploying the TCK in WildFly,
+                    where the server provides these dependencies.
+                    Other servlet containers/application servers may provide other things.
+                -->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!--
             Include the TCK server from the a2a-java project.
