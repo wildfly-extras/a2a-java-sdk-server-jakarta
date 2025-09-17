@@ -60,7 +60,7 @@
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
         <version.shrinkwrap.resolvers>3.3.4</version.shrinkwrap.resolvers>
         <version.rest-assured>5.5.5</version.rest-assured>
-        <version.wildfly.grpc>0.1.12.Final</version.wildfly.grpc>
+        <version.wildfly.grpc>0.1.13.Final</version.wildfly.grpc>
 
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <arquillian.java.vm.args></arquillian.java.vm.args>
@@ -136,6 +136,11 @@
             </dependency>
             <dependency>
                 <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-client-transport-rest</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
                 <artifactId>a2a-java-sdk-common</artifactId>
                 <version>${version.sdk}</version>
             </dependency>
@@ -162,6 +167,11 @@
             <dependency>
                 <groupId>io.github.a2asdk</groupId>
                 <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-transport-rest</artifactId>
                 <version>${version.sdk}</version>
             </dependency>
             <dependency>
@@ -315,8 +325,9 @@
     <modules>
         <module>examples</module>
         <module>impl/jsonrpc</module>
-        <module>tck</module>
         <module>impl/grpc</module>
+        <module>impl/rest</module>
+        <module>tck</module>
         <module>tests</module>
     </modules>
     <profiles>

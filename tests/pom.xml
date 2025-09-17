@@ -38,5 +38,6 @@
     <modules>
         <module>jsonrpc</module>
         <module>grpc</module>
+        <module>rest</module>
     </modules>
 </project>
