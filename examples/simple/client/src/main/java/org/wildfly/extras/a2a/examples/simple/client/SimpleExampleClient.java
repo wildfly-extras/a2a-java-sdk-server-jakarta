@@ -45,13 +45,11 @@ public class SimpleExampleClient implements AutoCloseable {
         ClientBuilder clientBuilder = Client.builder(agentCard)
                 .clientConfig(config);
 
-        if (protocol.equals(TransportProtocol.JSONRPC.name())) {
-            clientBuilder.withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder());
-        } else if (protocol.equals(TransportProtocol.HTTP_JSON.asString())) {
-            clientBuilder.withTransport(RestTransport.class, new RestTransportConfigBuilder());
-        } else {
-            // 'target' comes from the AgentCard, and is populated by a2a-java
-            clientBuilder.withTransport(
+        TransportProtocol prot = TransportProtocol.fromString(protocol);
+        switch (prot) {
+            case JSONRPC -> clientBuilder.withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder());
+            case HTTP_JSON -> clientBuilder.withTransport(RestTransport.class, new RestTransportConfigBuilder());
+            case GRPC -> clientBuilder.withTransport(
                     GrpcTransport.class,
                     new GrpcTransportConfigBuilder().channelFactory(
                             target -> {
