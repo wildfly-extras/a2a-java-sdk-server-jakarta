@@ -106,6 +106,31 @@ jobs:
             echo "Actual: $CLIENT_OUTPUT"
             exit 1
           fi
+      - name: Test HTTP+JSON/REST simple example
+        run: |
+          # Build the server with rest
+          mvn -B clean package -pl examples/simple/server -Prest -Dversion.sdk=${SDK_VERSION}
+          
+          # Start server and wait
+          mvn -B wildfly:start -pl examples/simple/server -Dstartup-timeout=120
+          
+          # Run the client and capture output
+          CLIENT_OUTPUT=$(mvn -B exec:java -pl examples/simple/client -Prun-rest -Duser.name="CI Run" -q 2>&1)
+          
+          # Stop server
+          mvn -B wildfly:shutdown -pl examples/simple/server
+          
+          # Validate output
+          EXPECTED="Agent responds: Hello CI Run"
+          if [[ "$CLIENT_OUTPUT" == *"$EXPECTED"* ]]; then
+            echo "✅ HTTP+JSON/REST example test passed"
+            echo "Output: $CLIENT_OUTPUT"
+          else
+            echo "❌ HTTP+JSON/REST example test failed"
+            echo "Expected: $EXPECTED"
+            echo "Actual: $CLIENT_OUTPUT"
+            exit 1
+          fi
       - name: Upload WildFly logs on test failure
         if: failure()
         uses: actions/upload-artifact@v4

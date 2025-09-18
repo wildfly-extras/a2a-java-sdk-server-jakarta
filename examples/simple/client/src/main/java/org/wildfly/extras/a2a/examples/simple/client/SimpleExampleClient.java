@@ -1,14 +1,10 @@
 package org.wildfly.extras.a2a.examples.simple.client;
 
-import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import io.a2a.A2A;
@@ -22,6 +18,8 @@ import io.a2a.client.transport.grpc.GrpcTransport;
 import io.a2a.client.transport.grpc.GrpcTransportConfigBuilder;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
+import io.a2a.client.transport.rest.RestTransport;
+import io.a2a.client.transport.rest.RestTransportConfigBuilder;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
@@ -41,6 +39,7 @@ public class SimpleExampleClient implements AutoCloseable {
 
         ClientConfig config = new ClientConfig.Builder()
                 .setAcceptedOutputModes(List.of("text"))
+                .setUseClientPreference(true)
                 .build();
 
         ClientBuilder clientBuilder = Client.builder(agentCard)
@@ -48,6 +47,8 @@ public class SimpleExampleClient implements AutoCloseable {
 
         if (protocol.equals(TransportProtocol.JSONRPC.name())) {
             clientBuilder.withTransport(JSONRPCTransport.class, new JSONRPCTransportConfigBuilder());
+        } else if (protocol.equals(TransportProtocol.HTTP_JSON.asString())) {
+            clientBuilder.withTransport(RestTransport.class, new RestTransportConfigBuilder());
         } else {
             // 'target' comes from the AgentCard, and is populated by a2a-java
             clientBuilder.withTransport(
