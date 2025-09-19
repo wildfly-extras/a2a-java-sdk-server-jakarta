@@ -88,5 +88,26 @@ mvn clean install -Pgrpc -f server/pom.xml
 mvn exec:java -f client/pom.xml -Prun-grpc -Duser.name=Kabir
 ````
 
-You should see the output: `Agent responds: Hello kabir`
+You should see the output: `Agent responds: Hello Kabir`
+
+### HTTP+JSON/REST
+
+1. Build the server
+````shell
+mvn clean install -Prest -f server/pom.xml
+````
+
+2. Start the server
+
+````shell
+./server/target/wildfly/bin/standalone.sh --stability=preview
+````
+
+3. Run the client
+
+````shell
+mvn exec:java -f client/pom.xml -Prun-rest -Duser.name=Kabir
+````
+
+You should see the output: `Agent responds: Hello Kabir`
 

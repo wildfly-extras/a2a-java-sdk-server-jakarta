@@ -15,8 +15,8 @@
 
     <packaging>war</packaging>
 
-    <name>WildFly Extras - Java A2A SDK for Jakarta - Example - Simple</name>
-    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - TCK - WildFly Jar</description>
+    <name>WildFly Extras - Java A2A SDK for Jakarta - Example - Simple Server</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - Example - Simple</description>
 
     <properties>
         <!--
@@ -40,8 +40,8 @@
         </dependency>
 
         <!--
-            The core a2a-java server dependency. Default scope since it, and
-            a lot of its dependencies should be included in the war.  -->
+        The core a2a-java server dependency. Default scope since it, and
+        a lot of its dependencies should be included in the war.  -->
         <dependency>
             <groupId>io.github.a2asdk</groupId>
             <artifactId>a2a-java-sdk-server-common</artifactId>
@@ -79,7 +79,7 @@
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
                 <configuration>
-                     <feature-packs>
+                    <feature-packs>
                         <feature-pack>
                             <groupId>org.wildfly</groupId>
                             <artifactId>wildfly-galleon-pack</artifactId>
@@ -157,10 +157,10 @@
                 </dependency>
 
                 <!--
-                    gRPC needs JSONRPC to get the agent card.
-                    This is likely to change in the future. So for now include the
-                    JSONRCP dependencies here.
-                 -->
+                   gRPC needs JSONRPC to get the agent card.
+                   This is likely to change in the future. So for now include the
+                   JSONRCP dependencies here.
+                -->
                 <dependency>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>a2a-java-sdk-jakarta-jsonrpc</artifactId>
@@ -174,7 +174,7 @@
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <configuration>
-                             <feature-packs>
+                            <feature-packs>
                                 <!--
                                     Still include the main WildFly feature pack, so we are not stuck
                                     to the version used by the gRPC feature pack
@@ -184,7 +184,7 @@
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${version.wildfly}</version>
                                 </feature-pack>
-                                 <!-- Add the gRPC feature pack -->
+                                <!-- Add the gRPC feature pack -->
                                 <feature-pack>
                                     <groupId>org.wildfly.extras.grpc</groupId>
                                     <artifactId>wildfly-grpc-feature-pack</artifactId>
@@ -231,9 +231,16 @@
                     <artifactId>a2a-java-sdk-jakarta-rest</artifactId>
                     <version>${project.version}</version>
                 </dependency>
+
+                <!--
+                   gRPC needs JSONRPC to get the agent card.
+                   This is likely to change in the future. So for now include the
+                   JSONRCP dependencies here.
+                -->
                 <dependency>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java-util</artifactId>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>a2a-java-sdk-jakarta-jsonrpc</artifactId>
+                    <version>${project.version}</version>
                 </dependency>
             </dependencies>
         </profile>

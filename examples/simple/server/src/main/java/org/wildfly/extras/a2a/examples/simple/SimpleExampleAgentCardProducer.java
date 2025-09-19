@@ -27,7 +27,11 @@ public class SimpleExampleAgentCardProducer {
         interfaces.add(
                 new AgentInterface(
                         TransportProtocol.JSONRPC.asString(), jsonRpcUrl));
-
+        if(isRest()) {
+        interfaces.add(
+                new AgentInterface(
+                        TransportProtocol.HTTP_JSON.asString(), jsonRpcUrl));
+        }
         if (isGrpcEnabled()) {
             interfaces.add(
                     new AgentInterface(
@@ -58,6 +62,15 @@ public class SimpleExampleAgentCardProducer {
     private boolean isGrpcEnabled() {
         try {
             Class.forName("org.wildfly.extras.a2a.server.apps.grpc.GrpcBeanInitializer");
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private boolean isRest() {
+        try {
+            Class.forName("org.wildfly.extras.a2a.server.apps.rest.WildflyRestTransportMetadata");
             return true;
         } catch (Throwable t) {
             return false;

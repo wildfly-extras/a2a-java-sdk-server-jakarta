@@ -13,9 +13,9 @@
 
     <artifactId>a2a-java-sdk-jakarta-example-simple-client</artifactId>
 
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
-    <name>WildFly Extras - Java A2A SDK for Jakarta - Example - Simple</name>
+    <name>WildFly Extras - Java A2A SDK for Jakarta - Example - Simple Client</name>
     <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - TCK - WildFly Jar</description>
 
     <properties>
@@ -34,7 +34,11 @@
         </dependency>
         <dependency>
             <groupId>io.github.a2asdk</groupId>
-            <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
+            <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-client-transport-rest</artifactId>
         </dependency>
 
         <!-- Dependencies needed for gRPC -->
@@ -57,7 +61,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
                 <configuration>
                     <mainClass>org.wildfly.extras.a2a.examples.simple.client.SimpleExampleClient</mainClass>
                 </configuration>
@@ -93,6 +96,23 @@
                         <configuration>
                             <arguments>
                                 <argument>JSONRPC</argument>
+                                <argument>${user.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>run-rest</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <configuration>
+                            <arguments>
+                                <argument>HTTP+JSON</argument>
                                 <argument>${user.name}</argument>
                             </arguments>
                         </configuration>
