@@ -2,9 +2,12 @@ package org.wildfly.extras.a2a.server.apps.jakarta;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
@@ -31,10 +34,12 @@ import jakarta.ws.rs.ext.Providers;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.a2a.common.A2AHeaders;
 import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.auth.User;
+import io.a2a.server.extensions.A2AExtensions;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskRequest;
@@ -333,7 +338,13 @@ import org.slf4j.LoggerFactory;
 
             state.put("headers", headers);
 
-            return new ServerCallContext(user, state);
+            Enumeration<String> en = request.getHeaders(A2AHeaders.X_A2A_EXTENSIONS);
+            List<String> extensionHeaderValues = new ArrayList<>();
+            while (en.hasMoreElements()) {
+                extensionHeaderValues.add(en.nextElement());
+            }
+            Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
+            return new ServerCallContext(user, state, requestedExtensions);
         } else {
             CallContextFactory builder = callContextFactory.get();
             return builder.build(request);

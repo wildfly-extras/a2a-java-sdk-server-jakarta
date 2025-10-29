@@ -1,6 +1,11 @@
 package org.wildfly.extras.a2a.server.apps.grpc;
 
+import java.util.concurrent.Executor;
+
+import jakarta.inject.Inject;
+
 import io.a2a.server.requesthandlers.RequestHandler;
+import io.a2a.server.util.async.Internal;
 import io.a2a.spec.AgentCard;
 import io.a2a.transport.grpc.handler.CallContextFactory;
 import io.a2a.transport.grpc.handler.GrpcHandler;
@@ -20,6 +25,7 @@ public class WildFlyGrpcHandler extends GrpcHandler {
     private static volatile AgentCard staticAgentCard;
     private static volatile RequestHandler staticRequestHandler;
     private static volatile CallContextFactory staticCallContextFactory;
+    private static volatile Executor staticExecutor;
 
     public WildFlyGrpcHandler() {
         // Default constructor - the only one used by WildFly gRPC subsystem
@@ -29,10 +35,11 @@ public class WildFlyGrpcHandler extends GrpcHandler {
      * Called by GrpcBeanInitializer during CDI initialization to cache beans
      * for use by gRPC threads where CDI is not available.
      */
-    static void setStaticBeans(AgentCard agentCard, RequestHandler requestHandler, CallContextFactory callContextFactory) {
+    static void setStaticBeans(AgentCard agentCard, RequestHandler requestHandler, CallContextFactory callContextFactory, Executor executor) {
         staticAgentCard = agentCard;
         staticRequestHandler = requestHandler;
         staticCallContextFactory = callContextFactory;
+        staticExecutor = executor;
     }
 
     @Override
@@ -54,5 +61,13 @@ public class WildFlyGrpcHandler extends GrpcHandler {
     @Override
     protected CallContextFactory getCallContextFactory() {
         return staticCallContextFactory; // Can be null if not configured
+    }
+
+    @Override
+    protected Executor getExecutor() {
+        if (staticExecutor == null) {
+            throw new RuntimeException("Executor not available. ApplicationStartup may not have run yet.");
+        }
+        return staticExecutor;
     }
 }
