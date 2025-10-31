@@ -11,7 +11,7 @@ import io.a2a.A2A;
 import io.a2a.client.Client;
 import io.a2a.client.ClientBuilder;
 import io.a2a.client.ClientEvent;
-import io.a2a.client.TaskEvent;
+import io.a2a.client.MessageEvent;
 import io.a2a.client.config.ClientConfig;
 import io.a2a.client.http.A2ACardResolver;
 import io.a2a.client.transport.grpc.GrpcTransport;
@@ -23,10 +23,8 @@ import io.a2a.client.transport.rest.RestTransportConfigBuilder;
 import io.a2a.spec.A2AClientError;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.Artifact;
 import io.a2a.spec.Message;
 import io.a2a.spec.Part;
-import io.a2a.spec.Task;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.TransportProtocol;
 import io.grpc.ManagedChannelBuilder;
@@ -67,16 +65,12 @@ public class SimpleExampleClient implements AutoCloseable {
 
         //CompletableFuture
         BiConsumer<ClientEvent, AgentCard> consumer = (event, agentCard) -> {
-            if (event instanceof TaskEvent taskEvent) {
-                Task task = taskEvent.getTask();
+            if (event instanceof MessageEvent messageEvent) {
+                Message msg = messageEvent.getMessage();
                 StringBuilder sb = new StringBuilder();
-                if (task.getArtifacts() != null) {
-                    for (Artifact a : task.getArtifacts()) {
-                        for (Part<?> part : a.parts()) {
-                            if (part instanceof TextPart textPart) {
-                                sb.append(textPart.getText());
-                            }
-                        }
+                for (Part<?> part : msg.getParts()) {
+                    if (part instanceof TextPart textPart) {
+                        sb.append(textPart.getText());
                     }
                 }
                 response.complete(sb.toString());
