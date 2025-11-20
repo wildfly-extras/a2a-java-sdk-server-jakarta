@@ -39,6 +39,7 @@ jobs:
         with:
           repository: a2aproject/a2a-java
           path: a2a-java
+          ref: 0.3.x
       - name: Checkout a2a-tck
         uses: actions/checkout@v4
         with:
