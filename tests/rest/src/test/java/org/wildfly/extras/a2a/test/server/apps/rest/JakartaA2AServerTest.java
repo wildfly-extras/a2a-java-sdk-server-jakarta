@@ -9,6 +9,7 @@ import io.a2a.client.transport.rest.RestTransport;
 import io.a2a.client.transport.rest.RestTransportConfigBuilder;
 import io.a2a.grpc.A2AServiceGrpc;
 
+import io.a2a.integrations.microprofile.MicroProfileConfigProvider;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.apps.common.AbstractA2AServerTest;
 import io.a2a.spec.Event;
@@ -67,6 +68,8 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                 getJarForClass(A2AServiceGrpc.class), // Removing to avoid auto-registration by WildFly gRPC subsystem
                 // a2a-java-sdk-jakarta-rest.jar - contains WildflyRestTransportMetadata
                 getJarForClass(A2ARestServerResource.class),
+                //a2a-java-sdk-microprofile-config.jar (needed to configure a2a-java settings via MP Config)
+                getJarForClass(MicroProfileConfigProvider.class),
                 // protobuf-java.jar - include correct version to match gencode 4.31.1
                 getJarForClass(com.google.protobuf.InvalidProtocolBufferException.class),
                 getJarForClass(com.google.protobuf.util.JsonFormat.class),

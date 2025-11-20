@@ -45,7 +45,7 @@
     <properties>
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <version.wildfly>38.0.0.Final</version.wildfly>
-        <version.sdk>0.3.2.Final</version.sdk>
+        <version.sdk>0.3.3.Final</version.sdk>
         <!-- This needs to be same version as used by the sdk -->
         <version.mutiny-zero>1.1.1</version.mutiny-zero>
         <!-- gRPC version matching the a2a-java-sdk -->
@@ -142,6 +142,11 @@
             <dependency>
                 <groupId>io.github.a2asdk</groupId>
                 <artifactId>a2a-java-sdk-common</artifactId>
+                <version>${version.sdk}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.a2asdk</groupId>
+                <artifactId>a2a-java-sdk-microprofile-config</artifactId>
                 <version>${version.sdk}</version>
             </dependency>
             <dependency>
