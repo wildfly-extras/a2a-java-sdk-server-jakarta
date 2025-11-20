@@ -8,6 +8,7 @@ import io.a2a.client.ClientBuilder;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
+import io.a2a.integrations.microprofile.MicroProfileConfigProvider;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.apps.common.AbstractA2AServerTest;
 import io.a2a.spec.Event;
@@ -63,6 +64,8 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                 getJarForClass(JSONRPCHandler.class),
                 // a2a-java-sdk-jakarta-jsonrpc.jar - contains WildflyJSONRPCTransportMetadata
                 getJarForClass(WildflyJSONRPCTransportMetadata.class),
+                //a2a-java-sdk-microprofile-config.jar (needed to configure a2a-java settings via MP Config)
+                getJarForClass(MicroProfileConfigProvider.class),
                 // mutiny-zero.jar. This is provided by some WildFly layers, but not always, and not in
                 // the server provisioned by Glow when inspecting our war
                 getJarForClass(ZeroPublisher.class)).toArray(new JavaArchive[0]);

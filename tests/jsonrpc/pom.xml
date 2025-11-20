@@ -125,6 +125,11 @@
             <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-microprofile-config</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
