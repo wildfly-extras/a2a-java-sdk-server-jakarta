@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly.a2a</groupId>
         <artifactId>a2a-java-sdk-jakarta-tests-parent</artifactId>
-        <version>0.3.1.Beta1-SNAPSHOT</version>
+        <version>0.3.1.Final</version>
     </parent>
 
     <artifactId>a2a-java-sdk-jakarta-tests-grpc</artifactId>
@@ -68,6 +68,12 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-microprofile-config</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Add WildFly Jakarta implementation dependency -->
         <dependency>
             <groupId>${project.groupId}</groupId>

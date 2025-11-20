@@ -10,6 +10,7 @@ import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.transport.grpc.GrpcTransport;
 import io.a2a.client.transport.grpc.GrpcTransportConfigBuilder;
 import io.a2a.grpc.A2AServiceGrpc;
+import io.a2a.integrations.microprofile.MicroProfileConfigProvider;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.apps.common.AbstractA2AServerTest;
 import io.a2a.spec.Event;
@@ -74,6 +75,8 @@ public class WildFlyA2AGrpcTestCase extends AbstractA2AServerTest {
                 getJarForClass(Event.class),
                  //a2a-java-transport-grpc.jar
                  getJarForClass(GrpcHandler.class),
+                //a2a-java-sdk-microprofile-config.jar (needed to configure a2a-java settings via MP Config)
+                getJarForClass(MicroProfileConfigProvider.class),
                 // a2a-java-spec-grpc.jar (contains generated gRPC classes)
                  getJarForClass(A2AServiceGrpc.class), // Removing to avoid auto-registration by WildFly gRPC subsystem
                 // protobuf-java.jar - include correct version to match gencode 4.31.1
