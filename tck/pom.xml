@@ -84,6 +84,18 @@
         </dependency>
 
         <!--
+            This is not strictly needed, but if you want to configure the a2a-java further as mentioned in
+            https://github.com/a2aproject/a2a-java/blob/main/README.md#4-configuration-system
+            via MicroProfile Config, this jar needs to be included.
+        -->
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-microprofile-config</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+
+        <!--
             Include the TCK server from the a2a-java project.
             This is the application we will be using, providing the AgentExecutor and the AgentCard.
             For your own applications you should not use this dependency, but rather provide your own.

@@ -68,6 +68,12 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.a2asdk</groupId>
+            <artifactId>a2a-java-sdk-microprofile-config</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Add WildFly Jakarta implementation dependency -->
         <dependency>
             <groupId>${project.groupId}</groupId>
