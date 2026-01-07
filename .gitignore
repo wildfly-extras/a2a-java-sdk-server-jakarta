@@ -51,3 +51,7 @@ hs_err_pid*.log
 PutObjectStoreDirHere
 #OS X stuff
 .DS_Store
+
+#Claude stuff
+claudedocs/
+.serena/

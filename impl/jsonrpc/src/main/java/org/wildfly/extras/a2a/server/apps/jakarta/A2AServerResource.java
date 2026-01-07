@@ -13,6 +13,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.gson.JsonSyntaxException;
+
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,42 +33,46 @@ import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import jakarta.ws.rs.ext.Providers;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.a2a.common.A2AHeaders;
+import io.a2a.grpc.utils.JSONRPCUtils;
+import io.a2a.jsonrpc.common.json.IdJsonMappingException;
+import io.a2a.jsonrpc.common.json.InvalidParamsJsonMappingException;
+import io.a2a.jsonrpc.common.json.JsonMappingException;
+import io.a2a.jsonrpc.common.json.JsonProcessingException;
+import io.a2a.jsonrpc.common.json.JsonUtil;
+import io.a2a.jsonrpc.common.json.MethodNotFoundJsonMappingException;
+import io.a2a.jsonrpc.common.wrappers.A2AErrorResponse;
+import io.a2a.jsonrpc.common.wrappers.A2ARequest;
+import io.a2a.jsonrpc.common.wrappers.A2AResponse;
+import io.a2a.jsonrpc.common.wrappers.CancelTaskRequest;
+import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
+import io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardRequest;
+import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
+import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigRequest;
+import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
+import io.a2a.jsonrpc.common.wrappers.NonStreamingJSONRPCRequest;
+import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
+import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageRequest;
+import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigRequest;
+import io.a2a.jsonrpc.common.wrappers.StreamingJSONRPCRequest;
+import io.a2a.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.auth.User;
 import io.a2a.server.extensions.A2AExtensions;
 import io.a2a.server.util.async.Internal;
+import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
-import io.a2a.spec.CancelTaskRequest;
-import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
-import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
-import io.a2a.spec.GetTaskPushNotificationConfigRequest;
-import io.a2a.spec.GetTaskRequest;
-import io.a2a.spec.IdJsonMappingException;
+import io.a2a.spec.InternalError;
 import io.a2a.spec.InvalidParamsError;
-import io.a2a.spec.InvalidParamsJsonMappingException;
 import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.JSONParseError;
-import io.a2a.spec.JSONRPCError;
-import io.a2a.spec.JSONRPCErrorResponse;
-import io.a2a.spec.JSONRPCRequest;
-import io.a2a.spec.JSONRPCResponse;
-import io.a2a.spec.ListTaskPushNotificationConfigRequest;
 import io.a2a.spec.MethodNotFoundError;
-import io.a2a.spec.MethodNotFoundJsonMappingException;
-import io.a2a.spec.NonStreamingJSONRPCRequest;
-import io.a2a.spec.SendMessageRequest;
-import io.a2a.spec.SendStreamingMessageRequest;
-import io.a2a.spec.SetTaskPushNotificationConfigRequest;
-import io.a2a.spec.StreamingJSONRPCRequest;
-import io.a2a.spec.TaskResubscriptionRequest;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
+import io.a2a.grpc.utils.ProtoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,23 +103,56 @@ import org.slf4j.LoggerFactory;
      * Handles incoming POST requests to the main A2A endpoint. Dispatches the
      * request to the appropriate JSON-RPC handler method and returns the response.
      *
-     * @param request the JSON-RPC request
+     * @param body the JSON-RPC request string
      * @return the JSON-RPC response which may be an error response
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public JSONRPCResponse<?> handleNonStreamingRequests(
-            NonStreamingJSONRPCRequest<?> request, @Context HttpServletRequest httpRequest,
+    public String handleNonStreamingRequests(
+            String body, @Context HttpServletRequest httpRequest,
             @Context SecurityContext securityContext) {
 
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         LOGGER.debug("Handling non-streaming request");
+        A2ARequest<?> request = null;
+        A2AResponse<?> response;
         try {
-            return processNonStreamingRequest(request, context);
+            request = JSONRPCUtils.parseRequestBody(body);
+            response = processNonStreamingRequest((NonStreamingJSONRPCRequest<?>) request, context);
+        } catch (MethodNotFoundJsonMappingException e) {
+            LOGGER.warn("Method not found in request: {}", e.getMessage());
+            response = new A2AErrorResponse(e.getId(), new MethodNotFoundError());
+        } catch (InvalidParamsJsonMappingException e) {
+            LOGGER.warn("Invalid params in request: {}", e.getMessage());
+            response = new A2AErrorResponse(e.getId(), new InvalidParamsError());
+        } catch (IdJsonMappingException e) {
+            LOGGER.warn("Invalid request ID: {}", e.getMessage());
+            response = new A2AErrorResponse(e.getId(), new InvalidRequestError());
+        } catch (JsonMappingException e) {
+            LOGGER.warn("JSON mapping error: {}", e.getMessage(), e);
+            // Check if this is a parse error wrapped in a mapping exception
+            if (e.getCause() instanceof JsonProcessingException) {
+                response = new A2AErrorResponse(new JSONParseError());
+            } else {
+                // Otherwise it's an invalid request (valid JSON but doesn't match schema)
+                response = new A2AErrorResponse(new InvalidRequestError());
+            }
+        } catch (JsonSyntaxException e) {
+            LOGGER.warn("JSON syntax error: {}", e.getMessage());
+            response = new A2AErrorResponse(new JSONParseError());
+        } catch (JsonProcessingException e) {
+            LOGGER.warn("JSON processing error: {}", e.getMessage());
+            response = new A2AErrorResponse(new JSONParseError());
+        } catch (Throwable e) {
+            LOGGER.error("Unexpected error processing request: {}", e.getMessage(), e);
+            response = new A2AErrorResponse(new InternalError(e.getMessage()));
         } finally {
             LOGGER.debug("Completed non-streaming request");
         }
+
+        // Serialize response using protobuf conversion
+        return serializeResponse(response);
     }
 
     /**
@@ -124,44 +163,66 @@ import org.slf4j.LoggerFactory;
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.SERVER_SENT_EVENTS)
     public void handleStreamingRequests(
-            StreamingJSONRPCRequest<?> request, 
+            String body,
             @Context HttpServletResponse response,
             @Context HttpServletRequest httpRequest,
-            @Context SecurityContext securityContext,
-            @Context Providers providers) throws IOException {
-        
+            @Context SecurityContext securityContext) throws IOException {
+
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         LOGGER.debug("Handling streaming request with custom SSE response");
-        
+
         // Set SSE headers manually for proper streaming
         response.setContentType(MediaType.SERVER_SENT_EVENTS);
         response.setCharacterEncoding("UTF-8");
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
 
-        // Get the ObjectMapper from JAX-RS context
-        ObjectMapper objectMapper = providers.getContextResolver(ObjectMapper.class, MediaType.APPLICATION_JSON_TYPE)
-                .getContext(JSONRPCResponse.class);
-        if (objectMapper == null) {
-            // Fallback to properly configured ObjectMapper if context resolver doesn't provide one
-            objectMapper = new ObjectMapper();
-            objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
-            objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        A2ARequest<?> request = null;
+        try {
+            // Parse the request body
+            request = JSONRPCUtils.parseRequestBody(body);
+
+            // Get the publisher synchronously to avoid connection closure issues
+            Flow.Publisher<? extends A2AResponse<?>> publisher = createStreamingPublisher((StreamingJSONRPCRequest<?>) request, context);
+            LOGGER.debug("Created streaming publisher: {}", publisher);
+
+            if (publisher != null) {
+                // Handle the streaming response with custom SSE formatting
+                LOGGER.debug("Handling custom SSE response for publisher: {}", publisher);
+                handleCustomSSEResponse(publisher, response);
+            } else {
+                // Handle unsupported request types
+                LOGGER.debug("Unsupported streaming request type: {}", request.getClass().getSimpleName());
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unsupported streaming request type");
+            }
+        } catch (MethodNotFoundJsonMappingException e) {
+            LOGGER.warn("Method not found in streaming request: {}", e.getMessage());
+            sendErrorSSE(response, e.getId(), new MethodNotFoundError());
+        } catch (InvalidParamsJsonMappingException e) {
+            LOGGER.warn("Invalid params in streaming request: {}", e.getMessage());
+            sendErrorSSE(response, e.getId(), new InvalidParamsError());
+        } catch (IdJsonMappingException e) {
+            LOGGER.warn("Invalid request ID in streaming request: {}", e.getMessage());
+            sendErrorSSE(response, e.getId(), new InvalidRequestError());
+        } catch (JsonMappingException e) {
+            LOGGER.warn("JSON mapping error in streaming request: {}", e.getMessage(), e);
+            // Check if this is a parse error wrapped in a mapping exception
+            if (e.getCause() instanceof JsonProcessingException) {
+                sendErrorSSE(response, null, new JSONParseError());
+            } else {
+                // Otherwise it's an invalid request (valid JSON but doesn't match schema)
+                sendErrorSSE(response, null, new InvalidRequestError());
+            }
+        } catch (JsonSyntaxException e) {
+            LOGGER.warn("JSON syntax error in streaming request: {}", e.getMessage());
+            sendErrorSSE(response, null, new JSONParseError());
+        } catch (JsonProcessingException e) {
+            LOGGER.warn("JSON processing error in streaming request: {}", e.getMessage());
+            sendErrorSSE(response, null, new JSONParseError());
+        } catch (Throwable e) {
+            LOGGER.error("Unexpected error processing streaming request: {}", e.getMessage(), e);
+            sendErrorSSE(response, null, new InternalError(e.getMessage()));
         }
-        
-        // Get the publisher synchronously to avoid connection closure issues
-        Flow.Publisher<? extends JSONRPCResponse<?>> publisher = createStreamingPublisher(request, context);
-        LOGGER.debug("Created streaming publisher: {}", publisher);
-        
-        if (publisher != null) {
-            // Handle the streaming response with custom SSE formatting
-            LOGGER.debug("Handling custom SSE response for publisher: {}", publisher);
-            handleCustomSSEResponse(publisher, response, objectMapper);
-        } else {
-            // Handle unsupported request types
-            LOGGER.debug("Unsupported streaming request type: {}", request.getClass().getSimpleName());
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unsupported streaming request type");
-        }
-        
+
         LOGGER.debug("Completed streaming request processing");
     }
 
@@ -178,12 +239,14 @@ import org.slf4j.LoggerFactory;
         return jsonRpcHandler.getAgentCard();
     }
 
-    private JSONRPCResponse<?> processNonStreamingRequest(NonStreamingJSONRPCRequest<?> request,
+    private A2AResponse<?> processNonStreamingRequest(NonStreamingJSONRPCRequest<?> request,
                                                           ServerCallContext context) {
         if (request instanceof GetTaskRequest req) {
             return jsonRpcHandler.onGetTask(req, context);
         } else if (request instanceof CancelTaskRequest req) {
             return jsonRpcHandler.onCancelTask(req, context);
+        } else if (request instanceof ListTasksRequest req) {
+            return jsonRpcHandler.onListTasks(req, context);
         } else if (request instanceof SetTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.setPushNotificationConfig(req, context);
         } else if (request instanceof GetTaskPushNotificationConfigRequest req) {
@@ -205,12 +268,12 @@ import org.slf4j.LoggerFactory;
      * Creates a streaming publisher for the given request.
      * This method runs synchronously to avoid connection closure issues.
      */
-    private Flow.Publisher<? extends JSONRPCResponse<?>> createStreamingPublisher(StreamingJSONRPCRequest<?> request, 
+    private Flow.Publisher<? extends A2AResponse<?>> createStreamingPublisher(StreamingJSONRPCRequest<?> request,
                                                                                  ServerCallContext context) {
         if (request instanceof SendStreamingMessageRequest req) {
             return jsonRpcHandler.onMessageSendStream(req, context);
-        } else if (request instanceof TaskResubscriptionRequest req) {
-            return jsonRpcHandler.onResubscribeToTask(req, context);
+        } else if (request instanceof SubscribeToTaskRequest req) {
+            return jsonRpcHandler.onSubscribeToTask(req, context);
         } else {
             return null; // Unsupported request type
         }
@@ -220,14 +283,14 @@ import org.slf4j.LoggerFactory;
      * Handles the streaming response using custom SSE formatting.
      * This approach avoids JAX-RS SSE compatibility issues with async publishers.
      */
-    private void handleCustomSSEResponse(Flow.Publisher<? extends JSONRPCResponse<?>> publisher, 
-                                       HttpServletResponse response, ObjectMapper objectMapper) throws IOException {
-        
+    private void handleCustomSSEResponse(Flow.Publisher<? extends A2AResponse<?>> publisher,
+                                       HttpServletResponse response) throws IOException {
+
         PrintWriter writer = response.getWriter();
         AtomicLong eventId = new AtomicLong(0);
         CompletableFuture<Void> streamingComplete = new CompletableFuture<>();
-        
-        publisher.subscribe(new Flow.Subscriber<JSONRPCResponse<?>>() {
+
+        publisher.subscribe(new Flow.Subscriber<A2AResponse<?>>() {
             @SuppressWarnings("unused") // Stored for potential future use (e.g., cancellation)
             private Flow.Subscription subscription;
 
@@ -236,7 +299,7 @@ import org.slf4j.LoggerFactory;
                 LOGGER.debug("Custom SSE subscriber onSubscribe called");
                 this.subscription = subscription;
                 subscription.request(Long.MAX_VALUE);
-                
+
                 // Notify tests that we are subscribed
                 Runnable runnable = streamingIsSubscribedRunnable;
                 if (runnable != null) {
@@ -245,18 +308,18 @@ import org.slf4j.LoggerFactory;
             }
 
             @Override
-            public void onNext(JSONRPCResponse<?> item) {
+            public void onNext(A2AResponse<?> item) {
                 LOGGER.debug("Custom SSE subscriber onNext called with item: {}", item);
                 try {
-                    // Format as proper SSE event (matching Quarkus format)
-                    String jsonData = objectMapper.writeValueAsString(item);
+                    // Format as proper SSE event using protobuf conversion (matching Quarkus format)
+                    String jsonData = serializeResponse(item);
                     long id = eventId.getAndIncrement();
-                    
+
                     writer.write("data: " + jsonData + "\n");
                     writer.write("id: " + id + "\n");
                     writer.write("\n"); // Empty line to complete the event
                     writer.flush();
-                    
+
                     LOGGER.debug("Custom SSE event sent successfully with id: {}", id);
                 } catch (Exception e) {
                     LOGGER.error("Error writing SSE event: {}", e.getMessage(), e);
@@ -297,8 +360,26 @@ import org.slf4j.LoggerFactory;
     }
 
 
-    private JSONRPCResponse<?> generateErrorResponse(JSONRPCRequest<?> request, JSONRPCError error) {
-        return new JSONRPCErrorResponse(request.getId(), error);
+    private A2AResponse<?> generateErrorResponse(A2ARequest<?> request, A2AError error) {
+        return new A2AErrorResponse(request.getId(), error);
+    }
+
+    /**
+     * Sends an error response as a Server-Sent Event.
+     */
+    private void sendErrorSSE(HttpServletResponse response, Object id, A2AError error) {
+        try {
+            PrintWriter writer = response.getWriter();
+            A2AErrorResponse errorResponse = new A2AErrorResponse(id, error);
+            String jsonData = serializeResponse(errorResponse);
+            writer.write("data: " + jsonData + "\n");
+            writer.write("id: 0\n");
+            writer.write("\n"); // Empty line to complete the event
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            LOGGER.error("Error sending SSE error response: {}", e.getMessage(), e);
+        }
     }
 
     public static void setStreamingIsSubscribedRunnable(Runnable streamingIsSubscribedRunnable) {
@@ -352,15 +433,18 @@ import org.slf4j.LoggerFactory;
     }
 
     @Provider
-    public static class JsonParseExceptionMapper implements ExceptionMapper<JsonParseException> {
+    public static class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProcessingException> {
 
-        public JsonParseExceptionMapper() {
+        public JsonProcessingExceptionMapper() {
         }
 
         @Override
-        public Response toResponse(JsonParseException exception) {
+        public Response toResponse(JsonProcessingException exception) {
             // parse error, not possible to determine the request id
-            return Response.ok(new JSONRPCErrorResponse(new JSONParseError())).type(MediaType.APPLICATION_JSON).build();
+            LOGGER.warn("JSON processing exception caught by exception mapper: {}", exception.getMessage());
+            A2AErrorResponse errorResponse = new A2AErrorResponse(new JSONParseError());
+            String serialized = serializeResponse(errorResponse);
+            return Response.ok(serialized).type(MediaType.APPLICATION_JSON).build();
         }
 
     }
@@ -373,24 +457,75 @@ import org.slf4j.LoggerFactory;
 
         @Override
         public Response toResponse(JsonMappingException exception) {
-            if (exception.getCause() instanceof JsonParseException) {
-                return Response.ok(new JSONRPCErrorResponse(new JSONParseError())).type(MediaType.APPLICATION_JSON).build();
-            } else if (exception instanceof MethodNotFoundJsonMappingException) {
+            LOGGER.warn("JSON mapping exception caught by exception mapper: {}", exception.getMessage());
+
+            A2AErrorResponse errorResponse;
+            if (exception instanceof MethodNotFoundJsonMappingException) {
                 Object id = ((MethodNotFoundJsonMappingException) exception).getId();
-                return Response.ok(new JSONRPCErrorResponse(id, new MethodNotFoundError()))
-                        .type(MediaType.APPLICATION_JSON).build();
+                errorResponse = new A2AErrorResponse(id, new MethodNotFoundError());
             } else if (exception instanceof InvalidParamsJsonMappingException) {
                 Object id = ((InvalidParamsJsonMappingException) exception).getId();
-                return Response.ok(new JSONRPCErrorResponse(id, new InvalidParamsError()))
-                        .type(MediaType.APPLICATION_JSON).build();
+                errorResponse = new A2AErrorResponse(id, new InvalidParamsError());
             } else if (exception instanceof IdJsonMappingException) {
                 Object id = ((IdJsonMappingException) exception).getId();
-                return Response.ok(new JSONRPCErrorResponse(id, new InvalidRequestError()))
-                        .type(MediaType.APPLICATION_JSON).build();
+                errorResponse = new A2AErrorResponse(id, new InvalidRequestError());
+            } else if (exception.getCause() instanceof JsonProcessingException) {
+                errorResponse = new A2AErrorResponse(new JSONParseError());
+            } else {
+                // Not possible to determine the request id
+                errorResponse = new A2AErrorResponse(new InvalidRequestError());
             }
-            // not possible to determine the request id
-            return Response.ok(new JSONRPCErrorResponse(new InvalidRequestError())).type(MediaType.APPLICATION_JSON).build();
+
+            String serialized = serializeResponse(errorResponse);
+            return Response.ok(serialized).type(MediaType.APPLICATION_JSON).build();
         }
 
+    }
+
+    /**
+     * Serializes A2A responses to JSON using protobuf conversion.
+     * This ensures enum values are serialized correctly using protobuf JSON format.
+     */
+    private static String serializeResponse(A2AResponse<?> response) {
+        // For error responses, use JSONRPCUtils error serialization
+        if (response instanceof A2AErrorResponse error) {
+            return JSONRPCUtils.toJsonRPCErrorResponse(error.getId(), error.getError());
+        }
+        if (response.getError() != null) {
+            return JSONRPCUtils.toJsonRPCErrorResponse(response.getId(), response.getError());
+        }
+        // Convert domain response to protobuf message and serialize
+        com.google.protobuf.MessageOrBuilder protoMessage = convertToProto(response);
+        return JSONRPCUtils.toJsonRPCResultResponse(response.getId(), protoMessage);
+    }
+
+    /**
+     * Converts A2A response objects to their protobuf equivalents.
+     */
+    private static com.google.protobuf.MessageOrBuilder convertToProto(A2AResponse<?> response) {
+        if (response instanceof io.a2a.jsonrpc.common.wrappers.GetTaskResponse r) {
+            return ProtoUtils.ToProto.task(r.getResult());
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.CancelTaskResponse r) {
+            return ProtoUtils.ToProto.task(r.getResult());
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.SendMessageResponse r) {
+            return ProtoUtils.ToProto.taskOrMessage(r.getResult());
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.ListTasksResponse r) {
+            return ProtoUtils.ToProto.listTasksResult(r.getResult());
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse r) {
+            return ProtoUtils.ToProto.setTaskPushNotificationConfigResponse(r.getResult());
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse r) {
+            return ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse r) {
+            return ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(r.getResult());
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse) {
+            // DeleteTaskPushNotificationConfig has no result body, just return empty message
+            return com.google.protobuf.Empty.getDefaultInstance();
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardResponse r) {
+            return ProtoUtils.ToProto.getAuthenticatedExtendedCardResponse(r.getResult());
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.SendStreamingMessageResponse r) {
+            return ProtoUtils.ToProto.taskOrMessageStream(r.getResult());
+        } else {
+            throw new IllegalArgumentException("Unknown response type: " + response.getClass().getName());
+        }
     }
 }

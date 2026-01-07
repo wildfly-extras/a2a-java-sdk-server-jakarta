@@ -1,26 +1,28 @@
 package org.wildfly.extras.a2a.server.apps.jakarta;
 
 
+import static io.a2a.spec.A2AMethods.CANCEL_TASK_METHOD;
+import static io.a2a.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static io.a2a.spec.A2AMethods.GET_EXTENDED_AGENT_CARD_METHOD;
+import static io.a2a.spec.A2AMethods.GET_TASK_METHOD;
+import static io.a2a.spec.A2AMethods.GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static io.a2a.spec.A2AMethods.LIST_TASK_METHOD;
+import static io.a2a.spec.A2AMethods.LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+import static io.a2a.spec.A2AMethods.SEND_MESSAGE_METHOD;
+import static io.a2a.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
+import static io.a2a.spec.A2AMethods.SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import io.a2a.spec.CancelTaskRequest;
-import io.a2a.spec.DeleteTaskPushNotificationConfigRequest;
-import io.a2a.spec.GetAuthenticatedExtendedCardRequest;
-import io.a2a.spec.GetTaskPushNotificationConfigRequest;
-import io.a2a.spec.GetTaskRequest;
-import io.a2a.spec.ListTaskPushNotificationConfigRequest;
-import io.a2a.spec.SendMessageRequest;
-import io.a2a.spec.SendStreamingMessageRequest;
-import io.a2a.spec.SetTaskPushNotificationConfigRequest;
-import io.a2a.spec.TaskResubscriptionRequest;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.ext.Provider;
 
+import io.a2a.spec.A2AMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,19 +63,20 @@ public class A2ARequestFilter implements ContainerRequestFilter {
     }
 
     private static boolean isStreamingRequest(String requestBody) {
-        return requestBody.contains(SendStreamingMessageRequest.METHOD) ||
-               requestBody.contains(TaskResubscriptionRequest.METHOD);
+        return requestBody.contains(SEND_STREAMING_MESSAGE_METHOD) ||
+                requestBody.contains(A2AMethods.SUBSCRIBE_TO_TASK_METHOD);
     }
 
     private static boolean isNonStreamingRequest(String requestBody) {
-        return requestBody.contains(GetTaskRequest.METHOD) ||
-                requestBody.contains(CancelTaskRequest.METHOD) ||
-                requestBody.contains(SendMessageRequest.METHOD) ||
-                requestBody.contains(SetTaskPushNotificationConfigRequest.METHOD) ||
-                requestBody.contains(GetTaskPushNotificationConfigRequest.METHOD) ||
-                requestBody.contains(ListTaskPushNotificationConfigRequest.METHOD) ||
-                requestBody.contains(DeleteTaskPushNotificationConfigRequest.METHOD) ||
-                requestBody.contains(GetAuthenticatedExtendedCardRequest.METHOD);
+        return requestBody.contains(GET_TASK_METHOD) ||
+                requestBody.contains(CANCEL_TASK_METHOD) ||
+                requestBody.contains(SEND_MESSAGE_METHOD) ||
+                requestBody.contains(LIST_TASK_METHOD) ||
+                requestBody.contains(SET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD) ||
+                requestBody.contains(GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD) ||
+                requestBody.contains(LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD) ||
+                requestBody.contains(DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD) ||
+                requestBody.contains(GET_EXTENDED_AGENT_CARD_METHOD);
     }
 
     private static void putAcceptHeader(ContainerRequestContext requestContext, String mediaType) {

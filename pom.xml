@@ -12,7 +12,7 @@
 
     <groupId>org.wildfly.a2a</groupId>
     <artifactId>a2a-java-sdk-jakarta-parent</artifactId>
-    <version>0.3.1.Beta1-SNAPSHOT</version>
+    <version>1.0.0.Alpha1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -45,13 +45,8 @@
     <properties>
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <version.wildfly>38.0.0.Final</version.wildfly>
-        <version.sdk>0.3.3.Final</version.sdk>
-        <!-- This needs to be same version as used by the sdk -->
-        <version.mutiny-zero>1.1.1</version.mutiny-zero>
-        <!-- gRPC version matching the a2a-java-sdk -->
-        <version.grpc>1.73.0</version.grpc>
+        <version.sdk>1.0.0.Alpha1-SNAPSHOT</version.sdk>
 
-        <version.jboss-commons-logging>1.0.0.Final</version.jboss-commons-logging>
         <version.hamcrest>2.2</version.hamcrest>
         <version.junit>5.12.2</version.junit>
         <version.org.wildfly.arquillian>5.1.0.Beta11</version.org.wildfly.arquillian>
@@ -126,58 +121,10 @@
             </dependency>
             <dependency>
                 <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
+                <artifactId>a2a-java-sdk-bom</artifactId>
                 <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-client-transport-rest</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-common</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-microprofile-config</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-server-common</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-spec</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-spec-grpc</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-transport-grpc</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-transport-rest</artifactId>
-                <version>${version.sdk}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>io.github.a2asdk</groupId>
@@ -185,37 +132,10 @@
                 <version>${version.sdk}</version>
             </dependency>
             <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-http-client</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-tests-server-common</artifactId>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye.reactive</groupId>
-                <artifactId>mutiny-zero</artifactId>
-                <version>${version.mutiny-zero}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.a2asdk</groupId>
-                <artifactId>a2a-java-sdk-tests-server-common</artifactId>
-                <type>test-jar</type>
-                <scope>test</scope>
-                <version>${version.sdk}</version>
-            </dependency>
-            <dependency>
                 <groupId>io.rest-assured</groupId>
                 <artifactId>rest-assured</artifactId>
                 <version>${version.rest-assured}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>commons-logging-jboss-logging</artifactId>
-                <version>${version.jboss-commons-logging}</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
@@ -228,37 +148,6 @@
                 <artifactId>hamcrest</artifactId>
                 <version>${version.hamcrest}</version>
                 <scope>test</scope>
-            </dependency>
-            <!-- gRPC dependencies -->
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-protobuf</artifactId>
-                <version>${version.grpc}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-stub</artifactId>
-                <version>${version.grpc}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-netty</artifactId>
-                <version>${version.grpc}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-netty-shaded</artifactId>
-                <version>${version.grpc}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java</artifactId>
-                <version>4.31.1</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>failureaccess</artifactId>
-                <version>1.0.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

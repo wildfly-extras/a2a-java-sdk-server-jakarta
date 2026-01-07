@@ -3,13 +3,20 @@ package org.wildfly.extras.a2a.test.server.apps.rest;
 import java.io.File;
 import java.util.List;
 
+import com.google.api.AnnotationsProto;
+import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import io.a2a.client.ClientBuilder;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.transport.rest.RestTransport;
 import io.a2a.client.transport.rest.RestTransportConfigBuilder;
 import io.a2a.grpc.A2AServiceGrpc;
 
+import io.a2a.grpc.utils.JSONRPCUtils;
 import io.a2a.integrations.microprofile.MicroProfileConfigProvider;
+import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.apps.common.AbstractA2AServerTest;
 import io.a2a.spec.Event;
@@ -62,19 +69,26 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                 getJarForClass(PublicAgentCard.class),
                 // a2a-java-sdk-spec.jar
                 getJarForClass(Event.class),
-                // a2a-java-sdk-transport-jsonrpc
+                // a2a-java-sdk-spec-grpc.jar (contains JSONRPCUtils)
+                getJarForClass(JSONRPCUtils.class),
+                // a2a-java-sdk-transport-rest
                 getJarForClass(RestHandler.class),
-                // a2a-java-spec-grpc.jar (contains generated gRPC classes)
-                getJarForClass(A2AServiceGrpc.class), // Removing to avoid auto-registration by WildFly gRPC subsystem
+                // a2a-java-sdk-jsonrpc-common.jar
+                getJarForClass(JsonUtil.class),
+                // gson.jar (required by jsonrpc-common)
+                getJarForClass(Gson.class),
+                // protobuf-java.jar (required by spec-grpc)
+                getJarForClass(InvalidProtocolBufferException.class),
+                // protobuf-java-util.jar (required by spec-grpc JSONRPCUtils)
+                getJarForClass(JsonFormat.class),
+                // proto-google-common-protos.jar (required by spec-grpc)
+                getJarForClass(AnnotationsProto.class),
+                // guava.jar (required by a2a-java dependencies)
+                getJarForClass(ImmutableSet.class),
                 // a2a-java-sdk-jakarta-rest.jar - contains WildflyRestTransportMetadata
                 getJarForClass(A2ARestServerResource.class),
                 //a2a-java-sdk-microprofile-config.jar (needed to configure a2a-java settings via MP Config)
                 getJarForClass(MicroProfileConfigProvider.class),
-                // protobuf-java.jar - include correct version to match gencode 4.31.1
-                getJarForClass(com.google.protobuf.InvalidProtocolBufferException.class),
-                getJarForClass(com.google.protobuf.util.JsonFormat.class),
-                getJarForClass(com.google.gson.GsonBuilder.class),
-                getJarForClass(com.google.api.AnnotationsProto.class),
                 // mutiny-zero.jar. This is provided by some WildFly layers, but not always, and not in
                 // the server provisioned by Glow when inspecting our war
                 getJarForClass(ZeroPublisher.class)).toArray(JavaArchive[]::new);
@@ -87,7 +101,9 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                 .addPackage(A2ATestResource.class.getPackage())
                 // Add deployment descriptors
                 .addAsManifestResource("META-INF/beans.xml", "beans.xml")
-                .addAsWebInfResource("WEB-INF/web.xml", "web.xml");
+                .addAsWebInfResource("WEB-INF/web.xml", "web.xml")
+                // Add test properties file for AgentCardProducer
+                .addAsResource("a2a-requesthandler-test.properties");
         archive.toString(true);
         return archive;
     }

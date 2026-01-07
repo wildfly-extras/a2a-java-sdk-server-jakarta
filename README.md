@@ -2,6 +2,8 @@
 
 This is the integration of the [A2A Java SDK](https://github.com/a2aproject/a2a-java) for use in Jakarta servers. It is currently tested on **WildFly**, but it should be usable in other compliant Jakarta servers such as Tomcat, Jetty, and OpenLiberty. For Quarkus, use the reference implementation in the [A2A Java SDK](https://github.com/a2aproject/a2a-java) project.
 
+This implementation is aligned with **A2A Protocol Specification 1.0.0**.
+
 For more information about the A2A protocol, see [here](https://github.com/a2aproject/A2A).
 
 ## Getting Started
@@ -17,6 +19,17 @@ The key to enabling A2A in your Java application is to correctly package it. Her
 2.  **Provide implementations for `AgentExecutor` and `AgentCard`:** The A2A SDK requires you to provide your own implementations of the `AgentExecutor` and `AgentCard` interfaces. These are the core components that define the behavior of your agent. You can find more information about them in the [A2A Java SDK documentation](https://github.com/a2aproject/a2a-java).
 
 3.  **Manage Dependencies:** Your `.war` file must contain all necessary libraries in the `/WEB-INF/lib` directory. However, some libraries may already be provided by the application server itself.
+
+    * **Using the BOM:** To simplify dependency management, you can use the `a2a-java-sdk-bom` (Bill of Materials) which manages versions of all A2A SDK dependencies. Add this to your `<dependencyManagement>` section:
+      ```xml
+      <dependency>
+          <groupId>io.github.a2asdk</groupId>
+          <artifactId>a2a-java-sdk-bom</artifactId>
+          <version>${version.sdk}</version>
+          <type>pom</type>
+          <scope>import</scope>
+      </dependency>
+      ```
 
     * **Bundling Dependencies:** For libraries not provided by the server, you must bundle them inside your `.war`.
 
@@ -61,6 +74,8 @@ SUT_JSONRPC_URL=http://localhost:8080 SUT_GRPC_URL=http://localhost:9555 tck/tar
 
 The `SUT_JSONRPC_URL` and `SUT_GRPC_URL` are used by the TCK server's `AgentCardProducer` to specify the transports supported by the server agent.
 
-Once the server is up and running, run the TCK with the instructions in [a2aproject/a2a-tck](https://github.com/a2aproject/a2a-tck). Make sure you check out the correct tag of `a2aproject/a2a-tck` for the protocol version we are targeting.
+Once the server is up and running, run the TCK with the instructions in [a2aproject/a2a-tck](https://github.com/a2aproject/a2a-tck).
+
+**Note:** This implementation targets **A2A Protocol Specification 1.0.0**. Make sure you check out the corresponding 1.0.0 tag of `a2aproject/a2a-tck`.
 
 Be sure to set `TCK_STREAMING_TIMEOUT=4.0` when running the TCK to ensure the tests wait long enough to receive the events for streaming methods.
