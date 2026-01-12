@@ -55,7 +55,7 @@
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
         <version.shrinkwrap.resolvers>3.3.4</version.shrinkwrap.resolvers>
         <version.rest-assured>5.5.5</version.rest-assured>
-        <version.wildfly.grpc>0.1.13.Final</version.wildfly.grpc>
+        <version.wildfly.grpc>0.1.15.Final</version.wildfly.grpc>
 
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <arquillian.java.vm.args></arquillian.java.vm.args>
