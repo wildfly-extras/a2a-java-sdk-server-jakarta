@@ -21,6 +21,12 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
       - name: Check if SDK version is SNAPSHOT
         run: |
           SDK_VERSION=$(mvn help:evaluate -Dexpression=version.sdk -q -DforceStdout)
@@ -36,12 +42,6 @@ jobs:
         with:
           repository: a2aproject/a2a-java
           path: a2a-java
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
       - name: Build a2a-java with Maven, skipping tests
         if: env.IS_SNAPSHOT == 'true'
         run: |
