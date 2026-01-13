@@ -29,7 +29,7 @@ jobs:
           cache: maven
       - name: Check if SDK version is SNAPSHOT
         run: |
-          SDK_VERSION=$(mvn help:evaluate -Dexpression=version.sdk -q -DforceStdout 2>&1 | grep -v '\[')
+          SDK_VERSION=$(grep -oP '<version\.sdk>\K[^<]+' pom.xml)
           echo "Detected SDK_VERSION: ${SDK_VERSION}"
           echo "SDK_VERSION=${SDK_VERSION}" >> "$GITHUB_ENV"
           if [[ "${SDK_VERSION}" == *"-SNAPSHOT" ]]; then
