@@ -29,7 +29,8 @@ jobs:
           cache: maven
       - name: Check if SDK version is SNAPSHOT
         run: |
-          SDK_VERSION=$(mvn help:evaluate -Dexpression=version.sdk -q -DforceStdout)
+          SDK_VERSION=$(mvn help:evaluate -Dexpression=version.sdk -q -DforceStdout 2>&1 | grep -v '\[')
+          echo "Detected SDK_VERSION: ${SDK_VERSION}"
           echo "SDK_VERSION=${SDK_VERSION}" >> "$GITHUB_ENV"
           if [[ "${SDK_VERSION}" == *"-SNAPSHOT" ]]; then
             echo "IS_SNAPSHOT=true" >> "$GITHUB_ENV"
@@ -50,7 +51,8 @@ jobs:
       - name: Get a2a-java version and save as env var
         if: env.IS_SNAPSHOT == 'true'
         run: |
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout) 
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2>&1 | grep -v '\[')
+          echo "Detected a2a-java version: ${VERSION}"
           echo "SDK_VERSION=${VERSION}" >> "$GITHUB_ENV"
         working-directory: a2a-java
       - name: Run tests
