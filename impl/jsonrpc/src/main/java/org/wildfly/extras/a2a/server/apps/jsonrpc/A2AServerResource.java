@@ -1,4 +1,4 @@
-package org.wildfly.extras.a2a.server.apps.jakarta;
+package org.wildfly.extras.a2a.server.apps.jsonrpc;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -31,7 +31,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import jakarta.ws.rs.ext.Providers;
 
 import io.a2a.common.A2AHeaders;
 import io.a2a.grpc.utils.JSONRPCUtils;
@@ -39,7 +38,6 @@ import io.a2a.jsonrpc.common.json.IdJsonMappingException;
 import io.a2a.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonProcessingException;
-import io.a2a.jsonrpc.common.json.JsonUtil;
 import io.a2a.jsonrpc.common.json.MethodNotFoundJsonMappingException;
 import io.a2a.jsonrpc.common.wrappers.A2AErrorResponse;
 import io.a2a.jsonrpc.common.wrappers.A2ARequest;

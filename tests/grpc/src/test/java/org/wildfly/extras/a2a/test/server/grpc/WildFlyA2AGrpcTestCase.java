@@ -1,4 +1,4 @@
-package org.wildfly.extras.a2a.server.grpc.wildfly;
+package org.wildfly.extras.a2a.test.server.grpc;
 
 import java.io.File;
 import java.util.List;

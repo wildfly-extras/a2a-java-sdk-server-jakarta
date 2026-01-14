@@ -1,4 +1,4 @@
-package org.wildfly.extras.a2a.test.server.apps.jakarta;
+package org.wildfly.extras.a2a.test.server.apps.jsonrpc;
 
 
 import java.io.File;
@@ -29,7 +29,7 @@ import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.wildfly.extras.a2a.server.apps.jakarta.WildflyJSONRPCTransportMetadata;
+import org.wildfly.extras.a2a.server.apps.jsonrpc.WildflyJSONRPCTransportMetadata;
 
 
 @ArquillianTest

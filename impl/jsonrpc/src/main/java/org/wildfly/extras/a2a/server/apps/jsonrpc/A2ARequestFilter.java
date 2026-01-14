@@ -1,4 +1,4 @@
-package org.wildfly.extras.a2a.server.apps.jakarta;
+package org.wildfly.extras.a2a.server.apps.jsonrpc;
 
 
 import static io.a2a.spec.A2AMethods.CANCEL_TASK_METHOD;

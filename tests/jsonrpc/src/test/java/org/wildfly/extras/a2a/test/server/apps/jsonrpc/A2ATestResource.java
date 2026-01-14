@@ -1,4 +1,4 @@
-package org.wildfly.extras.a2a.test.server.apps.jakarta;
+package org.wildfly.extras.a2a.test.server.apps.jsonrpc;
 
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
@@ -24,7 +24,7 @@ import io.a2a.spec.PushNotificationConfig;
 import io.a2a.spec.Task;
 import io.a2a.spec.TaskArtifactUpdateEvent;
 import io.a2a.spec.TaskStatusUpdateEvent;
-import org.wildfly.extras.a2a.server.apps.jakarta.A2AServerResource;
+import org.wildfly.extras.a2a.server.apps.jsonrpc.A2AServerResource;
 
 @Path("/test")
 @ApplicationScoped
