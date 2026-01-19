@@ -1,4 +1,4 @@
-package org.wildfly.extras.a2a.server.apps.jakarta;
+package org.wildfly.extras.a2a.server.apps.jsonrpc;
 
 
 import jakarta.servlet.http.HttpServletRequest;

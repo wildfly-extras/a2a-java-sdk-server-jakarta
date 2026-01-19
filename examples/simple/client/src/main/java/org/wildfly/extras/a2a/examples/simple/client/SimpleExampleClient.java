@@ -70,11 +70,11 @@ public class SimpleExampleClient implements AutoCloseable {
             if (event instanceof TaskEvent taskEvent) {
                 Task task = taskEvent.getTask();
                 StringBuilder sb = new StringBuilder();
-                if (task.getArtifacts() != null) {
-                    for (Artifact a : task.getArtifacts()) {
+                if (task.artifacts() != null) {
+                    for (Artifact a : task.artifacts()) {
                         for (Part<?> part : a.parts()) {
                             if (part instanceof TextPart textPart) {
-                                sb.append(textPart.getText());
+                                sb.append(textPart.text());
                             }
                         }
                     }

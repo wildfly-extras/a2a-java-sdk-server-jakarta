@@ -38,24 +38,22 @@ public class SimpleExampleAgentCardProducer {
                             TransportProtocol.GRPC.asString(), "localhost:9555"));
         }
 
-        return new AgentCard.Builder()
+        return AgentCard.builder()
                 .name("Hello World Agent")
                 .description("Just a hello world agent")
-                .url(jsonRpcUrl)
                 .version("1.0.0")
                 .documentationUrl("http://example.com/docs")
-                .capabilities(new AgentCapabilities.Builder().build())
+                .capabilities(AgentCapabilities.builder().build())
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
-                .skills(Collections.singletonList(new AgentSkill.Builder()
+                .skills(Collections.singletonList(AgentSkill.builder()
                         .id("hello_world")
                         .name("Returns hello world")
                         .description("just returns hello world")
                         .tags(Collections.singletonList("hello world"))
                         .examples(List.of("hi", "hello world"))
                         .build()))
-                .protocolVersion("0.3.0")
-                .additionalInterfaces(interfaces)
+                .supportedInterfaces(interfaces)
                 .build();
     }
 

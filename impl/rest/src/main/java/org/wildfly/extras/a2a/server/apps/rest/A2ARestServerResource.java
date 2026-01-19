@@ -49,6 +49,8 @@ import org.slf4j.LoggerFactory;
 public class A2ARestServerResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(A2ARestServerResource.class);
+    private static final String PAGE_SIZE_PARAM = "pageSize";
+    private static final String PAGE_TOKEN_PARAM = "pageToken";
 
     @Inject
     RestHandler jsonRestHandler;
@@ -78,12 +80,12 @@ public class A2ARestServerResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("v1/message:send")
+    @Path("message:send")
     public Response sendMessage(String body, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.sendMessage(body, context);
+            response = jsonRestHandler.sendMessage(body, getTenant(httpRequest), context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new io.a2a.spec.InternalError(t.getMessage()));
         } finally {
@@ -97,13 +99,13 @@ public class A2ARestServerResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.SERVER_SENT_EVENTS)
-    @Path("v1/message:stream")
+    @Path("message:stream")
     public void sendMessageStreaming(String body, @Context HttpServletRequest httpRequest, @Context HttpServletResponse httpResponse, @Context SecurityContext securityContext) throws IOException {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestStreamingResponse streamingResponse = null;
         RestHandler.HTTPRestResponse error = null;
         try {
-            RestHandler.HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(body, context);
+            RestHandler.HTTPRestResponse response = jsonRestHandler.sendStreamingMessage(body, getTenant(httpRequest), context);
             if (response instanceof RestHandler.HTTPRestStreamingResponse hTTPRestStreamingResponse) {
                 streamingResponse = hTTPRestStreamingResponse;
             } else {
@@ -122,13 +124,13 @@ public class A2ARestServerResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.SERVER_SENT_EVENTS)
-    @Path("v1/tasks/{taskId}:subscribe")
+    @Path("tasks/{taskId}:subscribe")
     public void resubscribeTask(@PathParam("taskId") String taskId, @Context HttpServletRequest httpRequest, @Context HttpServletResponse httpResponse, @Context SecurityContext securityContext) throws IOException {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestStreamingResponse streamingResponse = null;
         RestHandler.HTTPRestResponse error = null;
         try {
-            RestHandler.HTTPRestResponse response = jsonRestHandler.resubscribeTask(taskId, context);
+            RestHandler.HTTPRestResponse response = jsonRestHandler.subscribeToTask(taskId, getTenant(httpRequest), context);
             if (response instanceof RestHandler.HTTPRestStreamingResponse hTTPRestStreamingResponse) {
                 streamingResponse = hTTPRestStreamingResponse;
             } else {
@@ -163,11 +165,11 @@ public class A2ARestServerResource {
     }
 
     @GET
-    @Path("v1/card")
+    @Path("card")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAuthenticatedExtendedCard() {
-        RestHandler.HTTPRestResponse response = jsonRestHandler.getAuthenticatedExtendedCard();
+    public Response getAuthenticatedExtendedCard(@Context HttpServletRequest httpRequest) {
+        RestHandler.HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(getTenant(httpRequest));
         return Response.status(response.getStatusCode())
                 .header(CONTENT_TYPE, response.getContentType())
                 .entity(response.getBody())
@@ -175,7 +177,59 @@ public class A2ARestServerResource {
     }
 
     @GET
-    @Path("v1/tasks/{taskId}")
+    @Path("tasks")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listTasks(@Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
+        ServerCallContext context = createCallContext(httpRequest, securityContext);
+        RestHandler.HTTPRestResponse response = null;
+        try {
+            // Extract query parameters
+            String contextId = httpRequest.getParameter("contextId");
+            String statusStr = httpRequest.getParameter("status");
+            if (statusStr != null && !statusStr.isEmpty()) {
+                statusStr = statusStr.toUpperCase();
+            }
+            String pageSizeStr = httpRequest.getParameter(PAGE_SIZE_PARAM);
+            String pageToken = httpRequest.getParameter(PAGE_TOKEN_PARAM);
+            String historyLengthStr = httpRequest.getParameter("historyLength");
+            String lastUpdatedAfter = httpRequest.getParameter("lastUpdatedAfter");
+            String includeArtifactsStr = httpRequest.getParameter("includeArtifacts");
+
+            // Parse optional parameters
+            Integer pageSize = null;
+            if (pageSizeStr != null && !pageSizeStr.isEmpty()) {
+                pageSize = Integer.valueOf(pageSizeStr);
+            }
+
+            Integer historyLength = null;
+            if (historyLengthStr != null && !historyLengthStr.isEmpty()) {
+                historyLength = Integer.valueOf(historyLengthStr);
+            }
+
+            Boolean includeArtifacts = null;
+            if (includeArtifactsStr != null && !includeArtifactsStr.isEmpty()) {
+                includeArtifacts = Boolean.valueOf(includeArtifactsStr);
+            }
+
+            response = jsonRestHandler.listTasks(contextId, statusStr, pageSize, pageToken,
+                    historyLength, lastUpdatedAfter, includeArtifacts, getTenant(httpRequest), context);
+        } catch (NumberFormatException e) {
+            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
+        } catch (IllegalArgumentException e) {
+            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
+        } catch (Throwable t) {
+            response = jsonRestHandler.createErrorResponse(new io.a2a.spec.InternalError(t.getMessage()));
+        } finally {
+            return Response.status(response.getStatusCode())
+                    .header(CONTENT_TYPE, response.getContentType())
+                    .entity(response.getBody())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("tasks/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTask(@PathParam("taskId") String taskId, @QueryParam("history_length") String history_length,
@@ -187,7 +241,7 @@ public class A2ARestServerResource {
             if (history_length != null) {
                 historyLength = Integer.valueOf(history_length);
             }
-            response = jsonRestHandler.getTask(taskId, historyLength, context);
+            response = jsonRestHandler.getTask(taskId, historyLength, getTenant(httpRequest), context);
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad history_length"));
         } catch (Throwable t) {
@@ -201,14 +255,14 @@ public class A2ARestServerResource {
     }
 
     @POST
-    @Path("v1/tasks/{taskId}:cancel")
+    @Path("tasks/{taskId}:cancel")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response cancelTask(@PathParam("taskId") String taskId, String body, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
+    public Response cancelTask(@PathParam("taskId") String taskId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.cancelTask(taskId, context);
+            response = jsonRestHandler.cancelTask(taskId, getTenant(httpRequest), context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new io.a2a.spec.InternalError(t.getMessage()));
         } finally {
@@ -220,14 +274,14 @@ public class A2ARestServerResource {
     }
 
     @POST
-    @Path("v1/tasks/{taskId}/pushNotificationConfigs")
+    @Path("tasks/{taskId}/pushNotificationConfigs")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response setTaskPushNotificationConfiguration(@PathParam("taskId") String taskId, String body, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, context);
+            response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, getTenant(httpRequest), context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new io.a2a.spec.InternalError(t.getMessage()));
         } finally {
@@ -239,14 +293,14 @@ public class A2ARestServerResource {
     }
 
     @GET
-    @Path("v1/tasks/{taskId}/pushNotificationConfigs/{configId}")
+    @Path("tasks/{taskId}/pushNotificationConfigs/{configId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTaskPushNotificationConfiguration(@PathParam("taskId") String taskId, @PathParam("configId") String configId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, context);
+            response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, configId, getTenant(httpRequest), context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new io.a2a.spec.InternalError(t.getMessage()));
         } finally {
@@ -258,33 +312,55 @@ public class A2ARestServerResource {
     }
 
     @GET
-    @Path("v1/tasks/{taskId}/pushNotificationConfigs")
+    @Path("tasks/{taskId}/pushNotificationConfigs")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listTaskPushNotificationConfigurations(@PathParam("taskId") String taskId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
+    public Response getOrListTaskPushNotificationConfigurations(@PathParam("taskId") String taskId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.listTaskPushNotificationConfigurations(taskId, context);
+            if (taskId == null || taskId.isEmpty()) {
+                response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+            } else {
+                // Check if request has trailing slash to distinguish GET (with /) from LIST (without /)
+                String requestURI = httpRequest.getRequestURI();
+                if (requestURI.endsWith("/")) {
+                    // GET with null configId - trailing slash case
+                    response = jsonRestHandler.getTaskPushNotificationConfiguration(taskId, null, getTenant(httpRequest), context);
+                } else {
+                    // LIST - no trailing slash case
+                    int pageSize = 0;
+                    if (httpRequest.getParameter(PAGE_SIZE_PARAM) != null) {
+                        pageSize = Integer.parseInt(httpRequest.getParameter(PAGE_SIZE_PARAM));
+                    }
+                    String pageToken = "";
+                    if (httpRequest.getParameter(PAGE_TOKEN_PARAM) != null) {
+                        pageToken = httpRequest.getParameter(PAGE_TOKEN_PARAM);
+                    }
+                    response = jsonRestHandler.listTaskPushNotificationConfigurations(
+                            taskId, pageSize, pageToken, getTenant(httpRequest), context);
+                }
+            }
+        } catch (NumberFormatException e) {
+            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad " + PAGE_SIZE_PARAM));
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new io.a2a.spec.InternalError(t.getMessage()));
-        } finally {
-            return Response.status(response.getStatusCode())
-                    .header(CONTENT_TYPE, response.getContentType())
-                    .entity(response.getBody())
-                    .build();
         }
+        return Response.status(response.getStatusCode())
+                .header(CONTENT_TYPE, response.getContentType())
+                .entity(response.getBody())
+                .build();
     }
 
     @DELETE
-    @Path("v1/tasks/{taskId}/pushNotificationConfigs/{configId}")
+    @Path("tasks/{taskId}/pushNotificationConfigs/{configId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteTaskPushNotificationConfiguration(@PathParam("taskId") String taskId, @PathParam("configId") String configId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.deleteTaskPushNotificationConfiguration(taskId, configId, context);
+            response = jsonRestHandler.deleteTaskPushNotificationConfiguration(taskId, configId, getTenant(httpRequest), context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new io.a2a.spec.InternalError(t.getMessage()));
         } finally {
@@ -361,5 +437,9 @@ public class A2ARestServerResource {
             CallContextFactory builder = callContextFactory.get();
             return builder.build(request);
         }
+    }
+
+    private String getTenant(HttpServletRequest request) {
+        return request.getContextPath();
     }
 }
