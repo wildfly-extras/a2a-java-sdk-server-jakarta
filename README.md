@@ -67,7 +67,7 @@ You now have a server provisioned with the `.war` deployed in the `tck/target/wi
 We can start the server using the following command:
 
 ```bash
-SUT_JSONRPC_URL=http://localhost:8080 SUT_GRPC_URL=http://localhost:9555 tck/target/wildfly/bin/standalone.sh --stability=preview
+ SUT_JSONRPC_URL=http://localhost:8080 SUT_GRPC_URL=http://localhost:9555 SUT_REST_URL=http://localhost:8080 tck/target/wildfly/bin/standalone.sh --stability=preview
 ```
 
 `--stability=preview` is needed since the TCK server is provisioned with the gRPC subsystem, which is currently at the `preview` stability level.
@@ -79,3 +79,9 @@ Once the server is up and running, run the TCK with the instructions in [a2aproj
 **Note:** This implementation targets **A2A Protocol Specification 1.0.0**. Make sure you check out the corresponding 1.0.0 tag of `a2aproject/a2a-tck`.
 
 Be sure to set `TCK_STREAMING_TIMEOUT=4.0` when running the TCK to ensure the tests wait long enough to receive the events for streaming methods.
+
+Then to run the TCK, run the following command from the clone of 
+
+```shell
+./run_tck.py --sut-url http://localhost:8080 --category all --transports jsonrpc,grpc,rest --compliance-report report.json
+```
