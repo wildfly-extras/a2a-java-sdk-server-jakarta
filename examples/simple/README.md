@@ -15,15 +15,19 @@ Currently, the `grpc` dependencies also include the `jsonrpc` ones, mainly becau
 
 Note that we need to exclude some transitive dependencies of jars which are provided by WildFly. Other Jakarta runtimes may provide different dependencies and need different exclusions.
 
-To create your own agent, you need to implement `AgentCard` and `AgentExecutor` beans. 
+To create your own agent, you need to implement `AgentCard` and `AgentExecutor` beans.
 
-* The `AgentCard` shows the capabilities of the agent.
-* The `AgentExecutor` handles the interaction with the LLM.
+* The `AgentCard` shows the capabilities of the agent, including supported transports and protocol version.
+* The `AgentExecutor` handles the interaction with the LLM and task execution.
 
 You can see our simple implementations at:
 
-* [`SimpleExampleAgentCardProducer.java`](./server/src/main/java/org/wildfly/extras/a2a/examples/simple/SimpleExampleAgentCardProducer.java) - note that this has some logic to determine the transports that exist on the classpath, which is then added to the additionalInterfaces of the AgentCard
-* [`SimpleExampleAgentExecutorProducer.java`](./server/src/main/java/org/wildfly/extras/a2a/examples/simple/SimpleExampleAgentExecutorProducer.java)
+* [`SimpleExampleAgentCardProducer.java`](./server/src/main/java/org/wildfly/extras/a2a/examples/simple/SimpleExampleAgentCardProducer.java) - configures the agent card with transport URLs and protocol version. Note that this has logic to determine which transports exist on the classpath, which are then added to the supportedInterfaces of the AgentCard.
+* [`SimpleExampleAgentExecutorProducer.java`](./server/src/main/java/org/wildfly/extras/a2a/examples/simple/SimpleExampleAgentExecutorProducer.java) - implements task execution using `AgentEmitter` to manage task lifecycle and artifacts
+
+The `AgentExecutor` interface provides two methods:
+* `execute(RequestContext context, AgentEmitter emitter)` - handles incoming requests, using the `AgentEmitter` to signal work progress, add artifacts, and complete tasks
+* `cancel(RequestContext context, AgentEmitter emitter)` - handles cancellation requests for running tasks
 
 In this example, the LLM interaction is mocked. For more advanced examples on how to interact with an LLM, please refer to the a2a-samples repository.
 
