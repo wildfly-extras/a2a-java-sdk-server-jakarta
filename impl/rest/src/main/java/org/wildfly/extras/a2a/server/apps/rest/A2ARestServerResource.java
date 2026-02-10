@@ -116,7 +116,7 @@ public class A2ARestServerResource {
                 httpResponse.setHeader(CONTENT_TYPE, APPLICATION_JSON);
                 httpResponse.sendError(error.getStatusCode(), error.getBody());
             } else {
-                handleCustomSSEResponse(streamingResponse.getPublisher(), httpResponse);
+                handleCustomSSEResponse(streamingResponse.getPublisher(), httpResponse, context);
             }
         }
     }
@@ -141,7 +141,7 @@ public class A2ARestServerResource {
                 httpResponse.setHeader(CONTENT_TYPE, APPLICATION_JSON);
                 httpResponse.sendError(error.getStatusCode(), error.getBody());
             } else {
-                handleCustomSSEResponse(streamingResponse.getPublisher(), httpResponse);
+                handleCustomSSEResponse(streamingResponse.getPublisher(), httpResponse, context);
             }
         }
     }
@@ -386,12 +386,14 @@ public class A2ARestServerResource {
     /**
      * Handles the streaming response using custom SSE formatting.
      * This approach avoids JAX-RS SSE compatibility issues with async publishers.
+     * Implements proper client disconnect detection and EventConsumer cancellation.
      */
     private void handleCustomSSEResponse(Flow.Publisher<String> publisher,
-            HttpServletResponse response) throws IOException {
+            HttpServletResponse response,
+            ServerCallContext context) throws IOException {
         CompletableFuture<Void> streamingComplete = new CompletableFuture<>();
         try (PrintWriter writer = response.getWriter()) {
-            publisher.subscribe(new SSESubscriber(streamingComplete, writer));
+            publisher.subscribe(new SSESubscriber(streamingComplete, writer, context));
             // Wait for streaming to complete before method returns
             streamingComplete.get();
         } catch (Exception e) {

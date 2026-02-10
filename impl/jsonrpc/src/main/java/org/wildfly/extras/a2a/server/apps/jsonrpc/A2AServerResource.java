@@ -31,6 +31,7 @@ import jakarta.ws.rs.core.SecurityContext;
 
 import io.a2a.common.A2AHeaders;
 import io.a2a.grpc.utils.JSONRPCUtils;
+import io.a2a.server.util.sse.SseFormatter;
 import io.a2a.jsonrpc.common.json.IdJsonMappingException;
 import io.a2a.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonMappingException;
@@ -177,7 +178,7 @@ import org.slf4j.LoggerFactory;
             if (publisher != null) {
                 // Handle the streaming response with custom SSE formatting
                 LOGGER.debug("Handling custom SSE response for publisher: {}", publisher);
-                handleCustomSSEResponse(publisher, response);
+                handleCustomSSEResponse(publisher, response, context);
             } else {
                 // Handle unsupported request types
                 LOGGER.debug("Unsupported streaming request type: {}", request.getClass().getSimpleName());
@@ -271,23 +272,25 @@ import org.slf4j.LoggerFactory;
     /**
      * Handles the streaming response using custom SSE formatting.
      * This approach avoids JAX-RS SSE compatibility issues with async publishers.
+     * Implements proper client disconnect detection and EventConsumer cancellation.
      */
     private void handleCustomSSEResponse(Flow.Publisher<? extends A2AResponse<?>> publisher,
-                                       HttpServletResponse response) throws IOException {
+                                       HttpServletResponse response,
+                                       ServerCallContext context) throws IOException {
 
         PrintWriter writer = response.getWriter();
         AtomicLong eventId = new AtomicLong(0);
         CompletableFuture<Void> streamingComplete = new CompletableFuture<>();
 
         publisher.subscribe(new Flow.Subscriber<A2AResponse<?>>() {
-            @SuppressWarnings("unused") // Stored for potential future use (e.g., cancellation)
             private Flow.Subscription subscription;
 
             @Override
             public void onSubscribe(Flow.Subscription subscription) {
                 LOGGER.debug("Custom SSE subscriber onSubscribe called");
                 this.subscription = subscription;
-                subscription.request(Long.MAX_VALUE);
+                // Use backpressure: request one item at a time
+                subscription.request(1);
 
                 // Notify tests that we are subscribed
                 Runnable runnable = streamingIsSubscribedRunnable;
@@ -300,16 +303,25 @@ import org.slf4j.LoggerFactory;
             public void onNext(A2AResponse<?> item) {
                 LOGGER.debug("Custom SSE subscriber onNext called with item: {}", item);
                 try {
-                    // Format as proper SSE event using protobuf conversion (matching Quarkus format)
-                    String jsonData = serializeResponse(item);
+                    // Format as proper SSE event using centralized SseFormatter
                     long id = eventId.getAndIncrement();
+                    String sseEvent = SseFormatter.formatResponseAsSSE(item, id);
 
-                    writer.write("data: " + jsonData + "\n");
-                    writer.write("id: " + id + "\n");
-                    writer.write("\n"); // Empty line to complete the event
+                    writer.write(sseEvent);
                     writer.flush();
 
+                    // Check if write failed (client disconnected)
+                    // PrintWriter doesn't throw IOException, so we must check for errors explicitly
+                    if (writer.checkError()) {
+                        LOGGER.info("SSE write failed (likely client disconnect)");
+                        handleClientDisconnect();
+                        return;
+                    }
+
                     LOGGER.debug("Custom SSE event sent successfully with id: {}", id);
+
+                    // Request next item (backpressure)
+                    subscription.request(1);
                 } catch (Exception e) {
                     LOGGER.error("Error writing SSE event: {}", e.getMessage(), e);
                     onError(e);
@@ -319,11 +331,7 @@ import org.slf4j.LoggerFactory;
             @Override
             public void onError(Throwable throwable) {
                 LOGGER.debug("Custom SSE subscriber onError called: {}", throwable.getMessage(), throwable);
-                try {
-                    writer.close();
-                } catch (Exception e) {
-                    LOGGER.error("Error closing writer: {}", e.getMessage(), e);
-                }
+                handleClientDisconnect();
                 streamingComplete.completeExceptionally(throwable);
             }
 
@@ -337,8 +345,23 @@ import org.slf4j.LoggerFactory;
                 }
                 streamingComplete.complete(null);
             }
+
+            private void handleClientDisconnect() {
+                LOGGER.info("SSE connection closed, calling EventConsumer.cancel() to stop polling loop");
+                // Cancel subscription to stop receiving events
+                if (subscription != null) {
+                    subscription.cancel();
+                }
+                // Call EventConsumer cancel callback to clean up ChildQueue
+                context.invokeEventConsumerCancelCallback();
+                try {
+                    writer.close();
+                } catch (Exception e) {
+                    LOGGER.debug("Error closing writer during disconnect: {}", e.getMessage());
+                }
+            }
         });
-        
+
         try {
             // Wait for streaming to complete before method returns
             streamingComplete.get();
