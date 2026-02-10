@@ -139,4 +139,25 @@ public class A2ATestResource {
         testUtilsBean.saveTaskPushNotificationConfig(taskId, notificationConfig);
         return Response.ok().build();
     }
+
+    /**
+     * REST endpoint to wait for child queue count to stabilize.
+     * Waits for the specified task's child queue count to match expectedCount for 3 consecutive
+     * checks (150ms total), ensuring EventConsumer polling loops have started.
+     *
+     * @param taskId the task ID whose child queues to monitor
+     * @param expectedCount the expected number of active child queues
+     * @param timeoutMs maximum time to wait in milliseconds
+     * @return Response with "true" if stable, "false" if timed out
+     */
+    @POST
+    @Path("/queue/awaitChildCountStable/{taskId}/{expectedCount}/{timeoutMs}")
+    @Produces(TEXT_PLAIN)
+    public Response awaitChildQueueCountStable(
+            @PathParam("taskId") String taskId,
+            @PathParam("expectedCount") int expectedCount,
+            @PathParam("timeoutMs") long timeoutMs) throws InterruptedException {
+        boolean stable = testUtilsBean.awaitChildQueueCountStable(taskId, expectedCount, timeoutMs);
+        return Response.ok(String.valueOf(stable), TEXT_PLAIN).build();
+    }
 }

@@ -27,10 +27,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import jakarta.ws.rs.ext.ExceptionMapper;
-import jakarta.ws.rs.ext.Provider;
 
 import io.a2a.common.A2AHeaders;
 import io.a2a.grpc.utils.JSONRPCUtils;
@@ -43,8 +40,9 @@ import io.a2a.jsonrpc.common.wrappers.A2AErrorResponse;
 import io.a2a.jsonrpc.common.wrappers.A2ARequest;
 import io.a2a.jsonrpc.common.wrappers.A2AResponse;
 import io.a2a.jsonrpc.common.wrappers.CancelTaskRequest;
+import io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
-import io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardRequest;
+import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
 import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigRequest;
@@ -52,7 +50,6 @@ import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
 import io.a2a.jsonrpc.common.wrappers.NonStreamingJSONRPCRequest;
 import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
 import io.a2a.jsonrpc.common.wrappers.SendStreamingMessageRequest;
-import io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.StreamingJSONRPCRequest;
 import io.a2a.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import io.a2a.server.ExtendedAgentCard;
@@ -113,38 +110,32 @@ import org.slf4j.LoggerFactory;
 
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         LOGGER.debug("Handling non-streaming request");
-        A2ARequest<?> request = null;
         A2AResponse<?> response;
         try {
-            request = JSONRPCUtils.parseRequestBody(body);
+            A2ARequest<?> request = JSONRPCUtils.parseRequestBody(body, null);
             response = processNonStreamingRequest((NonStreamingJSONRPCRequest<?>) request, context);
-        } catch (MethodNotFoundJsonMappingException e) {
-            LOGGER.warn("Method not found in request: {}", e.getMessage());
-            response = new A2AErrorResponse(e.getId(), new MethodNotFoundError());
         } catch (InvalidParamsJsonMappingException e) {
             LOGGER.warn("Invalid params in request: {}", e.getMessage());
-            response = new A2AErrorResponse(e.getId(), new InvalidParamsError());
+            response = new A2AErrorResponse(e.getId(), new InvalidParamsError(null, e.getMessage(), null));
+        } catch (MethodNotFoundJsonMappingException e) {
+            LOGGER.warn("Method not found in request: {}", e.getMessage());
+            response = new A2AErrorResponse(e.getId(), new MethodNotFoundError(null, e.getMessage(), null));
         } catch (IdJsonMappingException e) {
             LOGGER.warn("Invalid request ID: {}", e.getMessage());
-            response = new A2AErrorResponse(e.getId(), new InvalidRequestError());
+            response = new A2AErrorResponse(e.getId(), new InvalidRequestError(null, e.getMessage(), null));
         } catch (JsonMappingException e) {
             LOGGER.warn("JSON mapping error: {}", e.getMessage(), e);
-            // Check if this is a parse error wrapped in a mapping exception
-            if (e.getCause() instanceof JsonProcessingException) {
-                response = new A2AErrorResponse(new JSONParseError());
-            } else {
-                // Otherwise it's an invalid request (valid JSON but doesn't match schema)
-                response = new A2AErrorResponse(new InvalidRequestError());
-            }
+            // General JsonMappingException - treat as InvalidRequest
+            response = new A2AErrorResponse(new InvalidRequestError(null, e.getMessage(), null));
         } catch (JsonSyntaxException e) {
             LOGGER.warn("JSON syntax error: {}", e.getMessage());
-            response = new A2AErrorResponse(new JSONParseError());
+            response = new A2AErrorResponse(new JSONParseError(e.getMessage()));
         } catch (JsonProcessingException e) {
             LOGGER.warn("JSON processing error: {}", e.getMessage());
-            response = new A2AErrorResponse(new JSONParseError());
-        } catch (Throwable e) {
-            LOGGER.error("Unexpected error processing request: {}", e.getMessage(), e);
-            response = new A2AErrorResponse(new InternalError(e.getMessage()));
+            response = new A2AErrorResponse(new JSONParseError(e.getMessage()));
+        } catch (Throwable t) {
+            LOGGER.error("Unexpected error processing request: {}", t.getMessage(), t);
+            response = new A2AErrorResponse(new InternalError(t.getMessage()));
         } finally {
             LOGGER.debug("Completed non-streaming request");
         }
@@ -177,7 +168,7 @@ import org.slf4j.LoggerFactory;
         A2ARequest<?> request = null;
         try {
             // Parse the request body
-            request = JSONRPCUtils.parseRequestBody(body);
+            request = JSONRPCUtils.parseRequestBody(body, null);
 
             // Get the publisher synchronously to avoid connection closure issues
             Flow.Publisher<? extends A2AResponse<?>> publisher = createStreamingPublisher((StreamingJSONRPCRequest<?>) request, context);
@@ -245,7 +236,7 @@ import org.slf4j.LoggerFactory;
             return jsonRpcHandler.onCancelTask(req, context);
         } else if (request instanceof ListTasksRequest req) {
             return jsonRpcHandler.onListTasks(req, context);
-        } else if (request instanceof SetTaskPushNotificationConfigRequest req) {
+        } else if (request instanceof CreateTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.setPushNotificationConfig(req, context);
         } else if (request instanceof GetTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.getPushNotificationConfig(req, context);
@@ -255,8 +246,8 @@ import org.slf4j.LoggerFactory;
             return jsonRpcHandler.listPushNotificationConfig(req, context);
         } else if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.deletePushNotificationConfig(req, context);
-        } else if (request instanceof GetAuthenticatedExtendedCardRequest req) {
-            return jsonRpcHandler.onGetAuthenticatedExtendedCardRequest(req, context);
+        } else if (request instanceof GetExtendedAgentCardRequest req) {
+            return jsonRpcHandler.onGetExtendedCardRequest(req, context);
         } else {
             return generateErrorResponse(request, new UnsupportedOperationError());
         }
@@ -430,55 +421,8 @@ import org.slf4j.LoggerFactory;
         }
     }
 
-    @Provider
-    public static class JsonProcessingExceptionMapper implements ExceptionMapper<JsonProcessingException> {
-
-        public JsonProcessingExceptionMapper() {
-        }
-
-        @Override
-        public Response toResponse(JsonProcessingException exception) {
-            // parse error, not possible to determine the request id
-            LOGGER.warn("JSON processing exception caught by exception mapper: {}", exception.getMessage());
-            A2AErrorResponse errorResponse = new A2AErrorResponse(new JSONParseError());
-            String serialized = serializeResponse(errorResponse);
-            return Response.ok(serialized).type(MediaType.APPLICATION_JSON).build();
-        }
-
-    }
-
-    @Provider
-    public static class JsonMappingExceptionMapper implements ExceptionMapper<JsonMappingException> {
-
-        public JsonMappingExceptionMapper(){
-        }
-
-        @Override
-        public Response toResponse(JsonMappingException exception) {
-            LOGGER.warn("JSON mapping exception caught by exception mapper: {}", exception.getMessage());
-
-            A2AErrorResponse errorResponse;
-            if (exception instanceof MethodNotFoundJsonMappingException) {
-                Object id = ((MethodNotFoundJsonMappingException) exception).getId();
-                errorResponse = new A2AErrorResponse(id, new MethodNotFoundError());
-            } else if (exception instanceof InvalidParamsJsonMappingException) {
-                Object id = ((InvalidParamsJsonMappingException) exception).getId();
-                errorResponse = new A2AErrorResponse(id, new InvalidParamsError());
-            } else if (exception instanceof IdJsonMappingException) {
-                Object id = ((IdJsonMappingException) exception).getId();
-                errorResponse = new A2AErrorResponse(id, new InvalidRequestError());
-            } else if (exception.getCause() instanceof JsonProcessingException) {
-                errorResponse = new A2AErrorResponse(new JSONParseError());
-            } else {
-                // Not possible to determine the request id
-                errorResponse = new A2AErrorResponse(new InvalidRequestError());
-            }
-
-            String serialized = serializeResponse(errorResponse);
-            return Response.ok(serialized).type(MediaType.APPLICATION_JSON).build();
-        }
-
-    }
+    // Exception mappers removed - all error handling now done in main handler method
+    // to avoid JAX-RS double-encoding the JSON error responses
 
     /**
      * Serializes A2A responses to JSON using protobuf conversion.
@@ -509,8 +453,8 @@ import org.slf4j.LoggerFactory;
             return ProtoUtils.ToProto.taskOrMessage(r.getResult());
         } else if (response instanceof io.a2a.jsonrpc.common.wrappers.ListTasksResponse r) {
             return ProtoUtils.ToProto.listTasksResult(r.getResult());
-        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.SetTaskPushNotificationConfigResponse r) {
-            return ProtoUtils.ToProto.setTaskPushNotificationConfigResponse(r.getResult());
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.CreateTaskPushNotificationConfigResponse r) {
+            return ProtoUtils.ToProto.createTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse r) {
             return ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse r) {
@@ -518,8 +462,8 @@ import org.slf4j.LoggerFactory;
         } else if (response instanceof io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse) {
             // DeleteTaskPushNotificationConfig has no result body, just return empty message
             return com.google.protobuf.Empty.getDefaultInstance();
-        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.GetAuthenticatedExtendedCardResponse r) {
-            return ProtoUtils.ToProto.getAuthenticatedExtendedCardResponse(r.getResult());
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardResponse r) {
+            return ProtoUtils.ToProto.getExtendedCardResponse(r.getResult());
         } else if (response instanceof io.a2a.jsonrpc.common.wrappers.SendStreamingMessageResponse r) {
             return ProtoUtils.ToProto.taskOrMessageStream(r.getResult());
         } else {

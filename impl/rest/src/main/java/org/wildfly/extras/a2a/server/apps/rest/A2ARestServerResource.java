@@ -177,6 +177,18 @@ public class A2ARestServerResource {
     }
 
     @GET
+    @Path("extendedAgentCard")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getExtendedAgentCard(@Context HttpServletRequest httpRequest) {
+        RestHandler.HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(getTenant(httpRequest));
+        return Response.status(response.getStatusCode())
+                .header(CONTENT_TYPE, response.getContentType())
+                .entity(response.getBody())
+                .build();
+    }
+
+    @GET
     @Path("tasks")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -281,7 +293,7 @@ public class A2ARestServerResource {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.setTaskPushNotificationConfiguration(taskId, body, getTenant(httpRequest), context);
+            response = jsonRestHandler.CreateTaskPushNotificationConfiguration(taskId, body, getTenant(httpRequest), context);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new io.a2a.spec.InternalError(t.getMessage()));
         } finally {

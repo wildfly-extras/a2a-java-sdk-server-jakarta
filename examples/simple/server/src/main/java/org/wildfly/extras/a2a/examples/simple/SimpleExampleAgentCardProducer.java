@@ -26,16 +26,16 @@ public class SimpleExampleAgentCardProducer {
         // This may change in the future
         interfaces.add(
                 new AgentInterface(
-                        TransportProtocol.JSONRPC.asString(), jsonRpcUrl));
+                        TransportProtocol.JSONRPC.asString(), jsonRpcUrl, "1.0"));
         if(isRest()) {
         interfaces.add(
                 new AgentInterface(
-                        TransportProtocol.HTTP_JSON.asString(), jsonRpcUrl));
+                        TransportProtocol.HTTP_JSON.asString(), jsonRpcUrl, "1.0"));
         }
         if (isGrpcEnabled()) {
             interfaces.add(
                     new AgentInterface(
-                            TransportProtocol.GRPC.asString(), "localhost:9555"));
+                            TransportProtocol.GRPC.asString(), "localhost:9555", "1.0"));
         }
 
         return AgentCard.builder()

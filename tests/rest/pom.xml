@@ -186,6 +186,22 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Surefire plugin for running tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables combine.children="append">
+                        <jboss.install.dir>${jboss.home}</jboss.install.dir>
+                        <!--
+                            -Dtest.agent.card.port is understood by the AgentCardProducer in
+                            a2a-java-sdk-tests-server-common
+                        -->
+                        <server.jvm.args>-Dtest.agent.card.port=8080</server.jvm.args>
+                        <jboss.args>${server.jboss.args}</jboss.args>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
