@@ -94,7 +94,7 @@ class SSESubscriber implements Flow.Subscriber<String> {
     }
 
     private void handleClientDisconnect() {
-        LOGGER.info("SSE connection closed, calling EventConsumer.cancel() to stop polling loop");
+        LOGGER.debug("SSE connection closed, calling EventConsumer.cancel() to stop polling loop");
         // Cancel subscription to stop receiving events
         if (subscription != null) {
             subscription.cancel();
