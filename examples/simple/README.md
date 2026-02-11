@@ -17,7 +17,7 @@ Note that we need to exclude some transitive dependencies of jars which are prov
 
 To create your own agent, you need to implement `AgentCard` and `AgentExecutor` beans.
 
-* The `AgentCard` shows the capabilities of the agent, including supported transports and protocol version.
+* The `AgentCard` shows the capabilities of the agent, including supported transports and protocol version. This is the public version of the AgentCard, as this example does not provide an extended AgentCard. To provide an extended AgentCard, you produce it the same way, but with the @ExtendedAgentCard qualifier.
 * The `AgentExecutor` handles the interaction with the LLM and task execution.
 
 You can see our simple implementations at:
