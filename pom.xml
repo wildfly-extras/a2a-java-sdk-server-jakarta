@@ -44,8 +44,8 @@
 
     <properties>
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
-        <version.wildfly>38.0.0.Final</version.wildfly>
-        <version.sdk>1.0.0.Alpha2-SNAPSHOT</version.sdk>
+        <version.wildfly>39.0.1.Final</version.wildfly>
+        <version.sdk>1.0.0.Alpha2</version.sdk>
 
         <version.hamcrest>2.2</version.hamcrest>
         <version.junit>5.12.2</version.junit>
