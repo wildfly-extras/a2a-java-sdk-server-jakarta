@@ -11,22 +11,26 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.a2a.server.ServerCallContext;
+import io.a2a.server.util.sse.SseFormatter;
+
 class SSESubscriber implements Flow.Subscriber<String> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SSESubscriber.class);
     // Hook so testing can wait until the async Subscription is subscribed.
     private static volatile Runnable streamingIsSubscribedRunnable;
 
-    @SuppressWarnings("unused") // Stored for potential future use (e.g., cancellation)
     private Flow.Subscription subscription;
 
     private final AtomicLong eventId = new AtomicLong(0);
     private final CompletableFuture<Void> streamingComplete;
     private final PrintWriter writer;
+    private final ServerCallContext context;
 
-    public SSESubscriber(CompletableFuture<Void> streamingComplete, PrintWriter writer) {
+    public SSESubscriber(CompletableFuture<Void> streamingComplete, PrintWriter writer, ServerCallContext context) {
         this.streamingComplete = streamingComplete;
         this.writer = writer;
+        this.context = context;
     }
 
     public static void setStreamingIsSubscribedRunnable(Runnable streamingIsSubscribedRunnable) {
@@ -37,7 +41,8 @@ class SSESubscriber implements Flow.Subscriber<String> {
     public void onSubscribe(Flow.Subscription subscription) {
         LOGGER.debug("Custom SSE subscriber onSubscribe called");
         this.subscription = subscription;
-        subscription.request(Long.MAX_VALUE);
+        // Use backpressure: request one item at a time
+        subscription.request(1);
 
         // Notify tests that we are subscribed
         Runnable runnable = streamingIsSubscribedRunnable;
@@ -50,13 +55,25 @@ class SSESubscriber implements Flow.Subscriber<String> {
     public void onNext(String item) {
         LOGGER.debug("Custom SSE subscriber onNext called with item: {}", item);
         try {
-            // Format as proper SSE event (matching Quarkus format)
+            // Format as proper SSE event using centralized SseFormatter
             long id = eventId.getAndIncrement();
-            writer.write("data: " + item + "\n");
-            writer.write("id: " + id + "\n");
-            writer.write("\n"); // Empty line to complete the event
+            String sseEvent = SseFormatter.formatJsonAsSSE(item, id);
+
+            writer.write(sseEvent);
             writer.flush();
+
+            // Check if write failed (client disconnected)
+            // PrintWriter doesn't throw IOException, so we must check for errors explicitly
+            if (writer.checkError()) {
+                LOGGER.info("SSE write failed (likely client disconnect)");
+                handleClientDisconnect();
+                return;
+            }
+
             LOGGER.info("Custom SSE event sent successfully with id: {}", id);
+
+            // Request next item (backpressure)
+            subscription.request(1);
         } catch (Exception e) {
             LOGGER.error("Error writing SSE event: {}", e.getMessage(), e);
             onError(e);
@@ -66,6 +83,7 @@ class SSESubscriber implements Flow.Subscriber<String> {
     @Override
     public void onError(Throwable throwable) {
         LOGGER.debug("Custom SSE subscriber onError called: {}", throwable.getMessage(), throwable);
+        handleClientDisconnect();
         streamingComplete.completeExceptionally(throwable);
     }
 
@@ -73,5 +91,15 @@ class SSESubscriber implements Flow.Subscriber<String> {
     public void onComplete() {
         LOGGER.debug("Custom SSE subscriber onComplete called");
         streamingComplete.complete(null);
+    }
+
+    private void handleClientDisconnect() {
+        LOGGER.debug("SSE connection closed, calling EventConsumer.cancel() to stop polling loop");
+        // Cancel subscription to stop receiving events
+        if (subscription != null) {
+            subscription.cancel();
+        }
+        // Call EventConsumer cancel callback to clean up ChildQueue
+        context.invokeEventConsumerCancelCallback();
     }
 }

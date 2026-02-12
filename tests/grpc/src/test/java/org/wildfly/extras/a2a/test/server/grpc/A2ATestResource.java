@@ -137,4 +137,15 @@ public class A2ATestResource {
         testUtilsBean.saveTaskPushNotificationConfig(taskId, notificationConfig);
         return Response.ok().build();
     }
+
+    @POST
+    @Path("/queue/awaitChildCountStable/{taskId}/{expectedCount}/{timeoutMs}")
+    @Produces(TEXT_PLAIN)
+    public Response awaitChildQueueCountStable(
+            @PathParam("taskId") String taskId,
+            @PathParam("expectedCount") int expectedCount,
+            @PathParam("timeoutMs") long timeoutMs) throws InterruptedException {
+        boolean stable = testUtilsBean.awaitChildQueueCountStable(taskId, expectedCount, timeoutMs);
+        return Response.ok(String.valueOf(stable), TEXT_PLAIN).build();
+    }
 }

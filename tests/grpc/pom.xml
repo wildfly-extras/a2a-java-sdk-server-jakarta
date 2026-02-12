@@ -280,7 +280,7 @@
                             -Dtest.agent.card.port is understood by the AgentCardProducer in
                             a2a-java-sdk-tests-server-common
                         -->
-                        <server.jvm.args>-Dtest.agent.card.port=8080</server.jvm.args>
+                        <server.jvm.args>-Dtest.agent.card.port=9555</server.jvm.args>
                         <jboss.args>${server.jboss.args}</jboss.args>
                     </systemPropertyVariables>
                 </configuration>

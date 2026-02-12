@@ -9,6 +9,7 @@ import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
+import io.a2a.server.ExtendedAgentCard;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.server.util.async.Internal;
@@ -30,6 +31,10 @@ public class GrpcBeanInitializer {
     AgentCard agentCard;
 
     @Inject
+    @ExtendedAgentCard
+    Instance<AgentCard> extendedAgentCard;
+
+    @Inject
     RequestHandler requestHandler;
 
     @Inject
@@ -46,7 +51,8 @@ public class GrpcBeanInitializer {
         try {
             // Cache CDI beans for gRPC threads to use since CDI is not available on those threads
             CallContextFactory ccf = callContextFactory.isUnsatisfied() ? null : callContextFactory.get();
-            WildFlyGrpcHandler.setStaticBeans(agentCard, requestHandler, ccf, executor);
+            AgentCard extCard = extendedAgentCard.isUnsatisfied() ? null : extendedAgentCard.get();
+            WildFlyGrpcHandler.setStaticBeans(agentCard, extCard, requestHandler, ccf, executor);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -54,6 +60,6 @@ public class GrpcBeanInitializer {
 
     @PreDestroy
     public void cleanup() {
-        WildFlyGrpcHandler.setStaticBeans(null, null, null, null);
+        WildFlyGrpcHandler.setStaticBeans(null, null, null, null, null);
     }
 }

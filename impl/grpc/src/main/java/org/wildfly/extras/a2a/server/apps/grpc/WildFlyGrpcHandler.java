@@ -23,6 +23,7 @@ public class WildFlyGrpcHandler extends GrpcHandler {
 
     // Static cache populated during application startup by GrpcBeanInitializer
     private static volatile AgentCard staticAgentCard;
+    private static volatile AgentCard staticExtendedAgentCard;
     private static volatile RequestHandler staticRequestHandler;
     private static volatile CallContextFactory staticCallContextFactory;
     private static volatile Executor staticExecutor;
@@ -35,8 +36,9 @@ public class WildFlyGrpcHandler extends GrpcHandler {
      * Called by GrpcBeanInitializer during CDI initialization to cache beans
      * for use by gRPC threads where CDI is not available.
      */
-    static void setStaticBeans(AgentCard agentCard, RequestHandler requestHandler, CallContextFactory callContextFactory, Executor executor) {
+    static void setStaticBeans(AgentCard agentCard, AgentCard extendedAgentCard, RequestHandler requestHandler, CallContextFactory callContextFactory, Executor executor) {
         staticAgentCard = agentCard;
+        staticExtendedAgentCard = extendedAgentCard;
         staticRequestHandler = requestHandler;
         staticCallContextFactory = callContextFactory;
         staticExecutor = executor;
@@ -56,6 +58,11 @@ public class WildFlyGrpcHandler extends GrpcHandler {
             throw new RuntimeException("AgentCard not available. ApplicationStartup may not have run yet.");
         }
         return staticAgentCard;
+    }
+
+    @Override
+    protected AgentCard getExtendedAgentCard() {
+        return staticExtendedAgentCard; // Can be null if not configured
     }
 
     @Override
