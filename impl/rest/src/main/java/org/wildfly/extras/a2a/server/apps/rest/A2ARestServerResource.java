@@ -51,6 +51,8 @@ public class A2ARestServerResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(A2ARestServerResource.class);
     private static final String PAGE_SIZE_PARAM = "pageSize";
     private static final String PAGE_TOKEN_PARAM = "pageToken";
+    private static final String HISTORY_LENGTH_PARAM = "historyLength";
+    private static final String STATUS_TIMESTAMP_AFTER = "statusTimestampAfter";
 
     @Inject
     RestHandler jsonRestHandler;
@@ -206,8 +208,8 @@ public class A2ARestServerResource {
             }
             String pageSizeStr = httpRequest.getParameter(PAGE_SIZE_PARAM);
             String pageToken = httpRequest.getParameter(PAGE_TOKEN_PARAM);
-            String historyLengthStr = httpRequest.getParameter("historyLength");
-            String lastUpdatedAfter = httpRequest.getParameter("lastUpdatedAfter");
+            String historyLengthStr = httpRequest.getParameter(HISTORY_LENGTH_PARAM);
+            String statusTimestampAfter = httpRequest.getParameter(STATUS_TIMESTAMP_AFTER);
             String includeArtifactsStr = httpRequest.getParameter("includeArtifacts");
 
             // Parse optional parameters
@@ -227,7 +229,7 @@ public class A2ARestServerResource {
             }
 
             response = jsonRestHandler.listTasks(context, getTenant(httpRequest), contextId, statusStr, pageSize,
-                    pageToken, historyLength, lastUpdatedAfter, includeArtifacts);
+                    pageToken, historyLength, statusTimestampAfter, includeArtifacts);
         } catch (NumberFormatException e) {
             response = jsonRestHandler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
         } catch (IllegalArgumentException e) {
@@ -246,18 +248,18 @@ public class A2ARestServerResource {
     @Path("tasks/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTask(@PathParam("taskId") String taskId, @QueryParam("history_length") String history_length,
+    public Response getTask(@PathParam("taskId") String taskId, @QueryParam("historyLength") String historyLengthStr,
             @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
         try {
-            int historyLength = 0;
-            if (history_length != null) {
-                historyLength = Integer.valueOf(history_length);
+            Integer historyLength = null;
+            if (historyLengthStr != null && !historyLengthStr.isEmpty()) {
+                historyLength = Integer.valueOf(historyLengthStr);
             }
             response = jsonRestHandler.getTask(context, getTenant(httpRequest), taskId, historyLength);
         } catch (NumberFormatException e) {
-            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad history_length"));
+            response = jsonRestHandler.createErrorResponse(new InvalidParamsError("bad historyLength"));
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new io.a2a.spec.InternalError(t.getMessage()));
         } finally {
