@@ -3,12 +3,9 @@ package org.wildfly.extras.a2a.server.apps.grpc;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 
-import jakarta.inject.Inject;
-
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.requesthandlers.RequestHandler;
-import io.a2a.server.util.async.Internal;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
