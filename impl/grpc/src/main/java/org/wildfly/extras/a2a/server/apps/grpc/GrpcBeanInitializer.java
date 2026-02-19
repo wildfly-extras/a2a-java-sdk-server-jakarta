@@ -52,7 +52,22 @@ public class GrpcBeanInitializer {
             // Cache CDI beans for gRPC threads to use since CDI is not available on those threads
             CallContextFactory ccf = callContextFactory.isUnsatisfied() ? null : callContextFactory.get();
             AgentCard extCard = extendedAgentCard.isUnsatisfied() ? null : extendedAgentCard.get();
-            WildFlyGrpcHandler.setStaticBeans(agentCard, extCard, requestHandler, ccf, executor);
+            // Capture the deployment classloader for use on gRPC threads
+            // This is needed because gRPC threads have the grpc extension module classloader as TCCL,
+            // which cannot see deployment WEB-INF/lib jars needed by ServiceLoader
+            ClassLoader deploymentClassLoader = Thread.currentThread().getContextClassLoader();
+
+            // Force ClientBuilder class to load now with the correct deployment classloader as TCCL
+            // This ensures its static initializer runs with access to WEB-INF/lib transport providers
+            // Without this, if ClientBuilder loads earlier with the wrong TCCL, the static registry
+            // won't contain the gRPC transport provider
+            try {
+                Class.forName("io.a2a.client.ClientBuilder", true, deploymentClassLoader);
+            } catch (ClassNotFoundException e) {
+                // ClientBuilder not in deployment, ignore
+            }
+
+            WildFlyGrpcHandler.setStaticBeans(agentCard, extCard, requestHandler, ccf, executor, deploymentClassLoader);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -60,6 +75,6 @@ public class GrpcBeanInitializer {
 
     @PreDestroy
     public void cleanup() {
-        WildFlyGrpcHandler.setStaticBeans(null, null, null, null, null);
+        WildFlyGrpcHandler.setStaticBeans(null, null, null, null, null, null);
     }
 }

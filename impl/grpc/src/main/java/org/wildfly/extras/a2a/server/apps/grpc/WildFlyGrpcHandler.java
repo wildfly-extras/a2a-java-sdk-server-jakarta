@@ -1,12 +1,27 @@
 package org.wildfly.extras.a2a.server.apps.grpc;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.Flow;
 
 import jakarta.inject.Inject;
 
+import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
+import io.a2a.server.ServerCallContext;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.server.util.async.Internal;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
+import io.a2a.spec.EventKind;
+import io.a2a.spec.GetTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigParams;
+import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTasksParams;
+import io.a2a.spec.MessageSendParams;
+import io.a2a.spec.StreamingEventKind;
+import io.a2a.spec.Task;
+import io.a2a.spec.TaskIdParams;
+import io.a2a.spec.TaskPushNotificationConfig;
+import io.a2a.spec.TaskQueryParams;
 import io.a2a.transport.grpc.handler.CallContextFactory;
 import io.a2a.transport.grpc.handler.GrpcHandler;
 
@@ -27,6 +42,7 @@ public class WildFlyGrpcHandler extends GrpcHandler {
     private static volatile RequestHandler staticRequestHandler;
     private static volatile CallContextFactory staticCallContextFactory;
     private static volatile Executor staticExecutor;
+    private static volatile ClassLoader deploymentClassLoader;
 
     public WildFlyGrpcHandler() {
         // Default constructor - the only one used by WildFly gRPC subsystem
@@ -36,12 +52,13 @@ public class WildFlyGrpcHandler extends GrpcHandler {
      * Called by GrpcBeanInitializer during CDI initialization to cache beans
      * for use by gRPC threads where CDI is not available.
      */
-    static void setStaticBeans(AgentCard agentCard, AgentCard extendedAgentCard, RequestHandler requestHandler, CallContextFactory callContextFactory, Executor executor) {
+    static void setStaticBeans(AgentCard agentCard, AgentCard extendedAgentCard, RequestHandler requestHandler, CallContextFactory callContextFactory, Executor executor, ClassLoader classLoader) {
         staticAgentCard = agentCard;
         staticExtendedAgentCard = extendedAgentCard;
         staticRequestHandler = requestHandler;
         staticCallContextFactory = callContextFactory;
         staticExecutor = executor;
+        deploymentClassLoader = classLoader;
     }
 
     @Override
@@ -49,7 +66,10 @@ public class WildFlyGrpcHandler extends GrpcHandler {
         if (staticRequestHandler == null) {
             throw new RuntimeException("RequestHandler not available. ApplicationStartup may not have run yet.");
         }
-        return staticRequestHandler;
+        // Wrap the RequestHandler to set the deployment classloader as TCCL
+        // This is necessary because gRPC threads have the grpc extension module classloader as TCCL,
+        // which cannot see the deployment's WEB-INF/lib jars needed by ServiceLoader
+        return new ClassLoaderSwitchingRequestHandler(staticRequestHandler, deploymentClassLoader);
     }
 
     @Override
@@ -76,5 +96,83 @@ public class WildFlyGrpcHandler extends GrpcHandler {
             throw new RuntimeException("Executor not available. ApplicationStartup may not have run yet.");
         }
         return staticExecutor;
+    }
+
+    /**
+     * RequestHandler wrapper that sets the deployment classloader as TCCL before delegating.
+     * This is necessary because gRPC threads have the grpc extension module classloader,
+     * which cannot see deployment WEB-INF/lib jars needed by ServiceLoader.
+     */
+    private static class ClassLoaderSwitchingRequestHandler implements RequestHandler {
+        private final RequestHandler delegate;
+        private final ClassLoader deploymentClassLoader;
+
+        ClassLoaderSwitchingRequestHandler(RequestHandler delegate, ClassLoader deploymentClassLoader) {
+            this.delegate = delegate;
+            this.deploymentClassLoader = deploymentClassLoader;
+        }
+
+        private <T> T withDeploymentClassLoader(java.util.function.Supplier<T> supplier) {
+            ClassLoader originalTCCL = Thread.currentThread().getContextClassLoader();
+            try {
+                Thread.currentThread().setContextClassLoader(deploymentClassLoader);
+                return supplier.get();
+            } finally {
+                Thread.currentThread().setContextClassLoader(originalTCCL);
+            }
+        }
+
+        @Override
+        public EventKind onMessageSend(MessageSendParams params, ServerCallContext context) {
+            return withDeploymentClassLoader(() -> delegate.onMessageSend(params, context));
+        }
+
+        @Override
+        public Flow.Publisher<StreamingEventKind> onMessageSendStream(MessageSendParams params, ServerCallContext context) {
+            return withDeploymentClassLoader(() -> delegate.onMessageSendStream(params, context));
+        }
+
+        @Override
+        public Task onGetTask(TaskQueryParams params, ServerCallContext context) {
+            return withDeploymentClassLoader(() -> delegate.onGetTask(params, context));
+        }
+
+        @Override
+        public ListTasksResult onListTasks(ListTasksParams params, ServerCallContext context) {
+            return withDeploymentClassLoader(() -> delegate.onListTasks(params, context));
+        }
+
+        @Override
+        public Task onCancelTask(TaskIdParams params, ServerCallContext context) {
+            return withDeploymentClassLoader(() -> delegate.onCancelTask(params, context));
+        }
+
+        @Override
+        public Flow.Publisher<StreamingEventKind> onSubscribeToTask(TaskIdParams params, ServerCallContext context) {
+            return withDeploymentClassLoader(() -> delegate.onSubscribeToTask(params, context));
+        }
+
+        @Override
+        public TaskPushNotificationConfig onCreateTaskPushNotificationConfig(TaskPushNotificationConfig config, ServerCallContext context) {
+            return withDeploymentClassLoader(() -> delegate.onCreateTaskPushNotificationConfig(config, context));
+        }
+
+        @Override
+        public TaskPushNotificationConfig onGetTaskPushNotificationConfig(GetTaskPushNotificationConfigParams params, ServerCallContext context) {
+            return withDeploymentClassLoader(() -> delegate.onGetTaskPushNotificationConfig(params, context));
+        }
+
+        @Override
+        public ListTaskPushNotificationConfigResult onListTaskPushNotificationConfig(ListTaskPushNotificationConfigParams params, ServerCallContext context) {
+            return withDeploymentClassLoader(() -> delegate.onListTaskPushNotificationConfig(params, context));
+        }
+
+        @Override
+        public void onDeleteTaskPushNotificationConfig(DeleteTaskPushNotificationConfigParams params, ServerCallContext context) {
+            withDeploymentClassLoader(() -> {
+                delegate.onDeleteTaskPushNotificationConfig(params, context);
+                return null;
+            });
+        }
     }
 }
