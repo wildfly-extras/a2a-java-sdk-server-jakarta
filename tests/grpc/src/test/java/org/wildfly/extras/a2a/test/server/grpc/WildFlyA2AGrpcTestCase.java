@@ -13,6 +13,8 @@ import io.a2a.client.ClientBuilder;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.transport.grpc.GrpcTransport;
 import io.a2a.client.transport.grpc.GrpcTransportConfigBuilder;
+import io.a2a.client.transport.grpc.GrpcTransportProvider;
+import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.grpc.A2AServiceGrpc;
 import io.a2a.grpc.utils.JSONRPCUtils;
 import io.a2a.integrations.microprofile.MicroProfileConfigProvider;
@@ -30,6 +32,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.AfterAll;
@@ -101,7 +104,17 @@ public class WildFlyA2AGrpcTestCase extends AbstractA2AServerTest {
                 getJarForClass(A2AServiceGrpc.class), // Removing to avoid auto-registration by WildFly gRPC subsystem
                 // mutiny-zero.jar. This is provided by some WildFly layers, but not always, and not in
                 // the server provisioned by Glow when inspecting our war
-                getJarForClass(ZeroPublisher.class)).toArray(new JavaArchive[0]);
+                getJarForClass(ZeroPublisher.class),
+                // a2a-java-sdk-client-transport-spi.jar (client transport SPI)
+                getJarForClass(ClientTransport.class),
+                // a2a-java-sdk-client-transport-grpc.jar (gRPC client transport)
+                getJarForClass(GrpcTransportProvider.class)).toArray(new JavaArchive[0]);
+
+        // Create MANIFEST.MF with gRPC module dependencies
+        // These are provided by WildFly's gRPC feature pack and should not be packaged in WAR
+        // meta-inf export makes the module classes visible to all classloaders in the deployment
+        String manifest = "Manifest-Version: 1.0\n" +
+                "Dependencies: io.grpc-all\n";
 
         return ShrinkWrap.create(WebArchive.class, "ROOT.war")
                 .addAsLibraries(libraries)
@@ -112,7 +125,9 @@ public class WildFlyA2AGrpcTestCase extends AbstractA2AServerTest {
                 .addAsWebInfResource("WEB-INF/web.xml")
                 .addAsWebInfResource("META-INF/beans.xml", "beans.xml")
                 // Add test properties file for AgentCardProducer
-                .addAsResource("a2a-requesthandler-test.properties");
+                .addAsResource("a2a-requesthandler-test.properties")
+                // Add MANIFEST.MF with gRPC module dependencies from WildFly feature pack
+                .setManifest(new StringAsset(manifest));
     }
 
     static JavaArchive getJarForClass(Class<?> clazz) throws Exception {

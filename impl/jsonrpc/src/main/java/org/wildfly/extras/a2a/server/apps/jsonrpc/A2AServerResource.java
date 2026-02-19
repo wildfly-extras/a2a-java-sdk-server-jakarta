@@ -1,5 +1,9 @@
 package org.wildfly.extras.a2a.server.apps.jsonrpc;
 
+import static io.a2a.server.ServerCallContext.TRANSPORT_KEY;
+import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.HEADERS_KEY;
+import static io.a2a.transport.jsonrpc.context.JSONRPCContextKeys.TENANT_KEY;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -66,7 +70,9 @@ import io.a2a.spec.InvalidParamsError;
 import io.a2a.spec.InvalidRequestError;
 import io.a2a.spec.JSONParseError;
 import io.a2a.spec.MethodNotFoundError;
+import io.a2a.spec.TransportProtocol;
 import io.a2a.spec.UnsupportedOperationError;
+import io.a2a.transport.jsonrpc.context.JSONRPCContextKeys;
 import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
 import io.a2a.grpc.utils.ProtoUtils;
 import org.slf4j.Logger;
@@ -429,7 +435,7 @@ import org.slf4j.LoggerFactory;
                 headers.put(name, headers.get(name));
             }
 
-            state.put("headers", headers);
+            state.put(HEADERS_KEY, headers);
 
             Enumeration<String> en = request.getHeaders(A2AHeaders.X_A2A_EXTENSIONS);
             List<String> extensionHeaderValues = new ArrayList<>();
@@ -437,12 +443,30 @@ import org.slf4j.LoggerFactory;
                 extensionHeaderValues.add(en.nextElement());
             }
             Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
+            state.put(TENANT_KEY, extractTenant(request));
+            state.put(TRANSPORT_KEY, TransportProtocol.JSONRPC);
+            
             return new ServerCallContext(user, state, requestedExtensions);
         } else {
             CallContextFactory builder = callContextFactory.get();
             return builder.build(request);
         }
     }
+
+    private String extractTenant(HttpServletRequest request) {
+        String tenantPath = request.getRequestURI();
+        if (tenantPath == null || tenantPath.isBlank()) {
+            return "";
+        }
+        if (tenantPath.startsWith("/")) {
+            tenantPath = tenantPath.substring(1);
+        }
+        if(tenantPath.endsWith("/")) {
+            tenantPath = tenantPath.substring(0, tenantPath.length() -1);
+        }
+        return tenantPath;
+    }
+
 
     // Exception mappers removed - all error handling now done in main handler method
     // to avoid JAX-RS double-encoding the JSON error responses

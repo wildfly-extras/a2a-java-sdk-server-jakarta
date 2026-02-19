@@ -9,9 +9,11 @@ import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.a2a.client.ClientBuilder;
+import io.a2a.client.config.ClientConfig;
 import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.transport.rest.RestTransport;
 import io.a2a.client.transport.rest.RestTransportConfigBuilder;
+import io.a2a.client.transport.spi.ClientTransport;
 import io.a2a.grpc.A2AServiceGrpc;
 
 import io.a2a.grpc.utils.JSONRPCUtils;
@@ -91,7 +93,13 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                 getJarForClass(MicroProfileConfigProvider.class),
                 // mutiny-zero.jar. This is provided by some WildFly layers, but not always, and not in
                 // the server provisioned by Glow when inspecting our war
-                getJarForClass(ZeroPublisher.class)).toArray(JavaArchive[]::new);
+                getJarForClass(ZeroPublisher.class),
+                // a2a-java-sdk-client.jar (client library)
+                getJarForClass(ClientConfig.class),
+                // a2a-java-sdk-client-transport-spi.jar (client transport SPI)
+                getJarForClass(ClientTransport.class),
+                // a2a-java-sdk-client-transport-rest.jar (REST client transport)
+                getJarForClass(RestTransport.class)).toArray(JavaArchive[]::new);
 
 
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "ROOT.war")
