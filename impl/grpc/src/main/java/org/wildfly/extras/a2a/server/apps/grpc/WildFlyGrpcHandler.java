@@ -7,6 +7,7 @@ import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.requesthandlers.RequestHandler;
 import io.a2a.spec.AgentCard;
+import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
@@ -140,7 +141,7 @@ public class WildFlyGrpcHandler extends GrpcHandler {
         }
 
         @Override
-        public Task onCancelTask(TaskIdParams params, ServerCallContext context) {
+        public Task onCancelTask(CancelTaskParams params, ServerCallContext context) {
             return withDeploymentClassLoader(() -> delegate.onCancelTask(params, context));
         }
 

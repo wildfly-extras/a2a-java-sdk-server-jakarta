@@ -278,11 +278,11 @@ public class A2ARestServerResource {
     @Path("tasks/{taskId}:cancel")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response cancelTask(@PathParam("taskId") String taskId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
+    public Response cancelTask(@PathParam("taskId") String taskId, String body, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
         try {
-            response = jsonRestHandler.cancelTask(context, extractTenant(httpRequest), taskId);
+            response = jsonRestHandler.cancelTask(context, extractTenant(httpRequest), body, taskId);
         } catch (Throwable t) {
             response = jsonRestHandler.createErrorResponse(new io.a2a.spec.InternalError(t.getMessage()));
         } finally {

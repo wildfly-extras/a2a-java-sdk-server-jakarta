@@ -17,8 +17,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.google.gson.JsonSyntaxException;
-
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,9 +31,10 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 
+import com.google.gson.JsonSyntaxException;
 import io.a2a.common.A2AHeaders;
 import io.a2a.grpc.utils.JSONRPCUtils;
-import io.a2a.server.util.sse.SseFormatter;
+import io.a2a.grpc.utils.ProtoUtils;
 import io.a2a.jsonrpc.common.json.IdJsonMappingException;
 import io.a2a.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import io.a2a.jsonrpc.common.json.JsonMappingException;
@@ -50,7 +49,7 @@ import io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetExtendedAgentCardRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigRequest;
 import io.a2a.jsonrpc.common.wrappers.GetTaskRequest;
-import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigRequest;
+import io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsRequest;
 import io.a2a.jsonrpc.common.wrappers.ListTasksRequest;
 import io.a2a.jsonrpc.common.wrappers.NonStreamingJSONRPCRequest;
 import io.a2a.jsonrpc.common.wrappers.SendMessageRequest;
@@ -63,6 +62,7 @@ import io.a2a.server.auth.UnauthenticatedUser;
 import io.a2a.server.auth.User;
 import io.a2a.server.extensions.A2AExtensions;
 import io.a2a.server.util.async.Internal;
+import io.a2a.server.util.sse.SseFormatter;
 import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.InternalError;
@@ -72,9 +72,7 @@ import io.a2a.spec.JSONParseError;
 import io.a2a.spec.MethodNotFoundError;
 import io.a2a.spec.TransportProtocol;
 import io.a2a.spec.UnsupportedOperationError;
-import io.a2a.transport.jsonrpc.context.JSONRPCContextKeys;
 import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
-import io.a2a.grpc.utils.ProtoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -249,7 +247,7 @@ public class A2AServerResource {
             return jsonRpcHandler.getPushNotificationConfig(req, context);
         } else if (request instanceof SendMessageRequest req) {
             return jsonRpcHandler.onMessageSend(req, context);
-        } else if (request instanceof ListTaskPushNotificationConfigRequest req) {
+        } else if (request instanceof ListTaskPushNotificationConfigsRequest req) {
             return jsonRpcHandler.listPushNotificationConfig(req, context);
         } else if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.deletePushNotificationConfig(req, context);
@@ -504,7 +502,7 @@ public class A2AServerResource {
             return ProtoUtils.ToProto.createTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse r) {
             return ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
-        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigResponse r) {
+        } else if (response instanceof io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsResponse r) {
             return ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse) {
             // DeleteTaskPushNotificationConfig has no result body, just return empty message
