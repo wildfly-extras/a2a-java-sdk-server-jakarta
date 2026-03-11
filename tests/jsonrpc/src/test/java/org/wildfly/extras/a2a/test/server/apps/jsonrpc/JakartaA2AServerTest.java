@@ -16,15 +16,18 @@ import io.a2a.client.transport.jsonrpc.JSONRPCTransport;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportConfigBuilder;
 import io.a2a.client.transport.jsonrpc.JSONRPCTransportProvider;
 import io.a2a.client.transport.spi.ClientTransport;
+import io.a2a.common.MediaType;
 import io.a2a.grpc.utils.JSONRPCUtils;
 import io.a2a.integrations.microprofile.MicroProfileConfigProvider;
 import io.a2a.jsonrpc.common.json.JsonUtil;
+import io.a2a.jsonrpc.common.wrappers.A2AErrorResponse;
 import io.a2a.server.PublicAgentCard;
 import io.a2a.server.apps.common.AbstractA2AServerTest;
 import io.a2a.spec.Event;
 import io.a2a.spec.TransportProtocol;
 import io.a2a.transport.jsonrpc.handler.JSONRPCHandler;
 import io.a2a.util.Assert;
+import io.restassured.response.Response;
 import mutiny.zero.ZeroPublisher;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -32,7 +35,12 @@ import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.jupiter.api.Test;
 import org.wildfly.extras.a2a.server.apps.jsonrpc.WildFlyJSONRPCTransportMetadata;
+
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 @ArquillianTest
@@ -118,6 +126,34 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
     static JavaArchive getJarForClass(Class<?> clazz) throws Exception {
         File f = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
         return ShrinkWrap.createFromZipFile(JavaArchive.class, f);
+    }
+
+    @Test
+    public void testErrorResponseContentType() {
+        // Test that error responses use application/problem+json content-type as per A2A spec
+        String getTaskRequest = """
+            {"jsonrpc": "2.0", "method": "GetTask", "params": {"taskId": "non-existent-task-id"}, "id": "1"}
+            """;
+
+        Response response = given()
+                .contentType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
+                .body(getTaskRequest)
+                .when()
+                .post("/")
+                .then()
+                .statusCode(200)
+                .extract()
+                .response();
+
+        // Validate content-type header
+        String contentType = response.getContentType();
+        assertNotNull(contentType, "Content-Type header should be present");
+        assertEquals(MediaType.APPLICATION_PROBLEM_JSON, contentType,
+                "Error responses must use application/problem+json content-type");
+
+        // Validate it's actually an error response
+        A2AErrorResponse errorResponse = response.as(A2AErrorResponse.class);
+        assertNotNull(errorResponse.getError(), "Response should contain an error");
     }
 
 }

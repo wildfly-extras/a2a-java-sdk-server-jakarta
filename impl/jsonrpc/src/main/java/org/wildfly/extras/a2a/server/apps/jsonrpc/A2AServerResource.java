@@ -29,7 +29,9 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import com.google.gson.JsonSyntaxException;
 import io.a2a.common.A2AHeaders;
@@ -109,8 +111,9 @@ public class A2AServerResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String handleNonStreamingRequests(
-            String body, @Context HttpServletRequest httpRequest,
+    public Response handleNonStreamingRequests(
+            String body,
+            @Context HttpServletRequest httpRequest,
             @Context SecurityContext securityContext) {
 
         ServerCallContext context = createCallContext(httpRequest, securityContext);
@@ -141,12 +144,21 @@ public class A2AServerResource {
         } catch (Throwable t) {
             LOGGER.error("Unexpected error processing request: {}", t.getMessage(), t);
             response = new A2AErrorResponse(new InternalError(t.getMessage()));
-        } finally {
-            LOGGER.debug("Completed non-streaming request");
         }
 
         // Serialize response using protobuf conversion
-        return serializeResponse(response);
+        String serialized = serializeResponse(response);
+
+        // Set Content-Type according to A2A spec: application/problem+json for errors, application/json for success
+        String contentType = response.getError() != null
+            ? io.a2a.common.MediaType.APPLICATION_PROBLEM_JSON
+            : io.a2a.common.MediaType.APPLICATION_JSON;
+
+        // Return Response with explicit content-type header
+        return Response.status(Response.Status.OK)
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
+                .entity(serialized)
+                .build();
     }
 
     /**
@@ -435,7 +447,7 @@ public class A2AServerResource {
 
             state.put(HEADERS_KEY, headers);
 
-            Enumeration<String> en = request.getHeaders(A2AHeaders.X_A2A_EXTENSIONS);
+            Enumeration<String> en = request.getHeaders(A2AHeaders.A2A_EXTENSIONS);
             List<String> extensionHeaderValues = new ArrayList<>();
             while (en.hasMoreElements()) {
                 extensionHeaderValues.add(en.nextElement());
