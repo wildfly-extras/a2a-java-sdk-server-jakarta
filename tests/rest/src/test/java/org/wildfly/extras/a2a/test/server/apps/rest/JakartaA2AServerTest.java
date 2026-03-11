@@ -14,6 +14,7 @@ import io.a2a.client.http.A2AHttpClient;
 import io.a2a.client.transport.rest.RestTransport;
 import io.a2a.client.transport.rest.RestTransportConfigBuilder;
 import io.a2a.client.transport.spi.ClientTransport;
+import io.a2a.common.MediaType;
 import io.a2a.grpc.A2AServiceGrpc;
 
 import io.a2a.grpc.utils.JSONRPCUtils;
@@ -25,6 +26,7 @@ import io.a2a.spec.Event;
 import io.a2a.spec.TransportProtocol;
 import io.a2a.transport.rest.handler.RestHandler;
 import io.a2a.util.Assert;
+import io.restassured.response.Response;
 import mutiny.zero.ZeroPublisher;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -32,7 +34,12 @@ import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.jupiter.api.Test;
 import org.wildfly.extras.a2a.server.apps.rest.A2ARestServerResource;
+
+import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 
@@ -119,6 +126,28 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
     static JavaArchive getJarForClass(Class<?> clazz) throws Exception {
         File f = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
         return ShrinkWrap.createFromZipFile(JavaArchive.class, f);
+    }
+
+    @Test
+    public void testErrorResponseContentType() {
+        // Test that error responses use application/problem+json content-type as per A2A spec
+        // GetTask for a non-existent task will return an error
+        Response response = given()
+                .when()
+                .get("/tasks/non-existent-task-id")
+                .then()
+                .extract()
+                .response();
+
+        // For REST, errors return 4xx/5xx status codes
+        int statusCode = response.getStatusCode();
+        if (statusCode >= 400) {
+            // Validate content-type header for error responses
+            String contentType = response.getContentType();
+            assertNotNull(contentType, "Content-Type header should be present on error responses");
+            assertEquals(MediaType.APPLICATION_PROBLEM_JSON, contentType,
+                    "Error responses must use application/problem+json content-type");
+        }
     }
 
 }

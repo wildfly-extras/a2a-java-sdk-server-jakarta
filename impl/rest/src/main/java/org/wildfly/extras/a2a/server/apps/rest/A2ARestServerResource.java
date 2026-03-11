@@ -85,7 +85,6 @@ public class A2ARestServerResource {
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("message:send")
     public Response sendMessage(String body, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
@@ -161,7 +160,6 @@ public class A2ARestServerResource {
     @GET
     @Path(".well-known/agent-card.json")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getAgentCard() {
         RestHandler.HTTPRestResponse response = jsonRestHandler.getAgentCard();
         return Response.status(response.getStatusCode())
@@ -173,7 +171,6 @@ public class A2ARestServerResource {
     @GET
     @Path("card")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getAuthenticatedExtendedCard(@Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(context, extractTenant(httpRequest));
@@ -186,7 +183,6 @@ public class A2ARestServerResource {
     @GET
     @Path("extendedAgentCard")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getExtendedAgentCard(@Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = jsonRestHandler.getExtendedAgentCard(context, extractTenant(httpRequest));
@@ -199,7 +195,6 @@ public class A2ARestServerResource {
     @GET
     @Path("tasks")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response listTasks(@Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
@@ -251,7 +246,6 @@ public class A2ARestServerResource {
     @GET
     @Path("tasks/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTask(@PathParam("taskId") String taskId, @QueryParam("historyLength") String historyLengthStr,
             @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
@@ -277,7 +271,6 @@ public class A2ARestServerResource {
     @POST
     @Path("tasks/{taskId}:cancel")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response cancelTask(@PathParam("taskId") String taskId, String body, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
@@ -296,7 +289,6 @@ public class A2ARestServerResource {
     @POST
     @Path("tasks/{taskId}/pushNotificationConfigs")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response setTaskPushNotificationConfiguration(@PathParam("taskId") String taskId, String body, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
@@ -315,7 +307,6 @@ public class A2ARestServerResource {
     @GET
     @Path("tasks/{taskId}/pushNotificationConfigs/{configId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getTaskPushNotificationConfiguration(@PathParam("taskId") String taskId, @PathParam("configId") String configId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
@@ -334,7 +325,6 @@ public class A2ARestServerResource {
     @GET
     @Path("tasks/{taskId}/pushNotificationConfigs")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getOrListTaskPushNotificationConfigurations(@PathParam("taskId") String taskId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
@@ -376,7 +366,6 @@ public class A2ARestServerResource {
     @DELETE
     @Path("tasks/{taskId}/pushNotificationConfigs/{configId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response deleteTaskPushNotificationConfiguration(@PathParam("taskId") String taskId, @PathParam("configId") String configId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         RestHandler.HTTPRestResponse response = null;
@@ -451,7 +440,7 @@ public class A2ARestServerResource {
             state.put(TENANT_KEY, extractTenant(request));
             state.put(TRANSPORT_KEY, TransportProtocol.HTTP_JSON);
 
-            Enumeration<String> en = request.getHeaders(A2AHeaders.X_A2A_EXTENSIONS);
+            Enumeration<String> en = request.getHeaders(A2AHeaders.A2A_EXTENSIONS);
             List<String> extensionHeaderValues = new ArrayList<>();
             while (en.hasMoreElements()) {
                 extensionHeaderValues.add(en.nextElement());
