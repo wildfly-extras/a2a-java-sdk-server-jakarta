@@ -6,13 +6,14 @@ import java.util.concurrent.Flow;
 import io.a2a.jsonrpc.common.wrappers.ListTasksResult;
 import io.a2a.server.ServerCallContext;
 import io.a2a.server.requesthandlers.RequestHandler;
+import io.a2a.spec.A2AError;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.CancelTaskParams;
 import io.a2a.spec.DeleteTaskPushNotificationConfigParams;
 import io.a2a.spec.EventKind;
 import io.a2a.spec.GetTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigParams;
-import io.a2a.spec.ListTaskPushNotificationConfigResult;
+import io.a2a.spec.ListTaskPushNotificationConfigsParams;
+import io.a2a.spec.ListTaskPushNotificationConfigsResult;
 import io.a2a.spec.ListTasksParams;
 import io.a2a.spec.MessageSendParams;
 import io.a2a.spec.StreamingEventKind;
@@ -161,8 +162,8 @@ public class WildFlyGrpcHandler extends GrpcHandler {
         }
 
         @Override
-        public ListTaskPushNotificationConfigResult onListTaskPushNotificationConfig(ListTaskPushNotificationConfigParams params, ServerCallContext context) {
-            return withDeploymentClassLoader(() -> delegate.onListTaskPushNotificationConfig(params, context));
+        public ListTaskPushNotificationConfigsResult onListTaskPushNotificationConfigs(ListTaskPushNotificationConfigsParams params, ServerCallContext context) throws A2AError {
+            return withDeploymentClassLoader(() -> delegate.onListTaskPushNotificationConfigs(params, context));
         }
 
         @Override

@@ -19,12 +19,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
             <scope>test</scope>
         </dependency>
@@ -35,17 +35,17 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-server-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-tests-server-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-tests-server-common</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
@@ -106,17 +106,17 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-microprofile-config</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-jsonrpc-common</artifactId>
             <scope>test</scope>
         </dependency>
