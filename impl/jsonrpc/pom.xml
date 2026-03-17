@@ -20,7 +20,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
             <exclusions>
                 <exclusion>
@@ -34,7 +34,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-jsonrpc-common</artifactId>
             <version>${version.sdk}</version>
             <exclusions>
@@ -45,7 +45,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-tests-server-common</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -55,7 +55,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-tests-server-common</artifactId>
             <type>test-jar</type>
             <scope>test</scope>

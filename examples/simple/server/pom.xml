@@ -43,7 +43,7 @@
         The core a2a-java server dependency. Default scope since it, and
         a lot of its dependencies should be included in the war.  -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-server-common</artifactId>
 
             <!-- Exclude transitive dependencies provided by WildFly -->

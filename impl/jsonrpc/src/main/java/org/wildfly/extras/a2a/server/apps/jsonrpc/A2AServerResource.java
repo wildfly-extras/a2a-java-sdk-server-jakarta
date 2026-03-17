@@ -31,7 +31,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import jakarta.ws.rs.core.StreamingOutput;
 
 import com.google.gson.JsonSyntaxException;
 import io.a2a.common.A2AHeaders;
@@ -260,7 +259,7 @@ public class A2AServerResource {
         } else if (request instanceof SendMessageRequest req) {
             return jsonRpcHandler.onMessageSend(req, context);
         } else if (request instanceof ListTaskPushNotificationConfigsRequest req) {
-            return jsonRpcHandler.listPushNotificationConfig(req, context);
+            return jsonRpcHandler.listPushNotificationConfigs(req, context);
         } else if (request instanceof DeleteTaskPushNotificationConfigRequest req) {
             return jsonRpcHandler.deletePushNotificationConfig(req, context);
         } else if (request instanceof GetExtendedAgentCardRequest req) {
@@ -515,7 +514,7 @@ public class A2AServerResource {
         } else if (response instanceof io.a2a.jsonrpc.common.wrappers.GetTaskPushNotificationConfigResponse r) {
             return ProtoUtils.ToProto.getTaskPushNotificationConfigResponse(r.getResult());
         } else if (response instanceof io.a2a.jsonrpc.common.wrappers.ListTaskPushNotificationConfigsResponse r) {
-            return ProtoUtils.ToProto.listTaskPushNotificationConfigResponse(r.getResult());
+            return ProtoUtils.ToProto.listTaskPushNotificationConfigsResponse(r.getResult());
         } else if (response instanceof io.a2a.jsonrpc.common.wrappers.DeleteTaskPushNotificationConfigResponse) {
             // DeleteTaskPushNotificationConfig has no result body, just return empty message
             return com.google.protobuf.Empty.getDefaultInstance();

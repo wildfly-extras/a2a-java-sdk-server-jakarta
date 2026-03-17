@@ -45,7 +45,7 @@
     <properties>
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <version.wildfly>39.0.1.Final</version.wildfly>
-        <version.sdk>1.0.0.Alpha4-SNAPSHOT</version.sdk>
+        <version.sdk>1.0.0.Beta1-SNAPSHOT</version.sdk>
 
         <version.hamcrest>2.2</version.hamcrest>
         <version.junit>5.12.2</version.junit>
@@ -119,14 +119,14 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>io.github.a2asdk</groupId>
+                <groupId>org.a2aproject.sdk</groupId>
                 <artifactId>a2a-java-sdk-bom</artifactId>
                 <version>${version.sdk}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>io.github.a2asdk</groupId>
+                <groupId>org.a2aproject.sdk</groupId>
                 <artifactId>a2a-tck-server</artifactId>
                 <version>${version.sdk}</version>
             </dependency>

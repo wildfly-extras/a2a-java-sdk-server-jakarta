@@ -59,7 +59,7 @@
             via MicroProfile Config, this jar needs to be included.
         -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-microprofile-config</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -71,7 +71,7 @@
             For your own applications you should not use this dependency, but rather provide your own.
         -->
         <dependency>
-            <groupId>io.github.a2asdk</groupId>
+            <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-tck-server</artifactId>
             <exclusions>
                 <!--
