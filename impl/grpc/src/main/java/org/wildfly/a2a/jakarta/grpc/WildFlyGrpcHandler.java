@@ -85,6 +85,9 @@ public class WildFlyGrpcHandler extends GrpcHandler {
 
     @Override
     protected AgentCard getAgentCard() {
+        if (staticAgentCard == null && staticAgentCardRouter != null) {
+            staticAgentCard = staticAgentCardRouter.resolvePublicCard(null);
+        }
         if (staticAgentCard == null) {
             throw new RuntimeException("AgentCard not available. ApplicationStartup may not have run yet.");
         }
@@ -93,6 +96,9 @@ public class WildFlyGrpcHandler extends GrpcHandler {
 
     @Override
     protected AgentCard getExtendedAgentCard() {
+        if (staticExtendedAgentCard == null && staticAgentCardRouter != null) {
+            staticExtendedAgentCard = staticAgentCardRouter.resolveExtendedCard(null);
+        }
         return staticExtendedAgentCard; // Can be null if not configured
     }
 

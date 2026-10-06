@@ -1,5 +1,7 @@
 package org.wildfly.a2a.jakarta.rest;
 
+import static org.a2aproject.sdk.common.MediaType.APPLICATION_A2A_JSON;
+
 import java.io.IOException;
 
 import jakarta.inject.Inject;
@@ -47,20 +49,20 @@ public class A2ARestServerResource {
 
     @GET
     @Path(".well-known/agent-card.json")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response getAgentCard(@Context HttpServletRequest httpRequest) {
         return getDelegate().getAgentCard(httpRequest);
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     @Path("message:send")
     public Response sendMessage(String body, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         return getDelegate().sendMessage(body, httpRequest, securityContext);
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     @Produces(MediaType.SERVER_SENT_EVENTS)
     @Path("message:stream")
     public void sendMessageStreaming(String body, @Context HttpServletRequest httpRequest, @Context HttpServletResponse httpResponse, @Context SecurityContext securityContext) throws IOException {
@@ -76,28 +78,28 @@ public class A2ARestServerResource {
 
     @GET
     @Path("card")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response getAuthenticatedExtendedCard(@Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         return getDelegate().getAuthenticatedExtendedCard(httpRequest, securityContext);
     }
 
     @GET
     @Path("extendedAgentCard")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response getExtendedAgentCard(@Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         return getDelegate().getExtendedAgentCard(httpRequest, securityContext);
     }
 
     @GET
     @Path("tasks")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response listTasks(@Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         return getDelegate().listTasks(httpRequest, securityContext);
     }
 
     @GET
     @Path("tasks/{taskId}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response getTask(@PathParam("taskId") String taskId, @QueryParam("historyLength") String historyLengthStr,
             @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         return getDelegate().getTask(taskId, historyLengthStr, httpRequest, securityContext);
@@ -111,28 +113,28 @@ public class A2ARestServerResource {
 
     @POST
     @Path("tasks/{taskId}/pushNotificationConfigs")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response setTaskPushNotificationConfiguration(@PathParam("taskId") String taskId, String body, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         return getDelegate().setTaskPushNotificationConfiguration(taskId, body, httpRequest, securityContext);
     }
 
     @GET
     @Path("tasks/{taskId}/pushNotificationConfigs/{configId}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response getTaskPushNotificationConfiguration(@PathParam("taskId") String taskId, @PathParam("configId") String configId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         return getDelegate().getTaskPushNotificationConfiguration(taskId, configId, httpRequest, securityContext);
     }
 
     @GET
     @Path("tasks/{taskId}/pushNotificationConfigs")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response getOrListTaskPushNotificationConfigurations(@PathParam("taskId") String taskId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         return getDelegate().getOrListTaskPushNotificationConfigurations(taskId, httpRequest, securityContext);
     }
 
     @DELETE
     @Path("tasks/{taskId}/pushNotificationConfigs/{configId}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response deleteTaskPushNotificationConfiguration(@PathParam("taskId") String taskId, @PathParam("configId") String configId, @Context HttpServletRequest httpRequest, @Context SecurityContext securityContext) {
         return getDelegate().deleteTaskPushNotificationConfiguration(taskId, configId, httpRequest, securityContext);
     }

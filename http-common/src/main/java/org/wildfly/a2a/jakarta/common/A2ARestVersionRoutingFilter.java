@@ -94,20 +94,18 @@ public class A2ARestVersionRoutingFilter implements ContainerRequestFilter {
 
         String versionHeader = requestContext.getHeaderString(A2AHeaders.A2A_VERSION);
 
-        if (versionHeader == null) {
-            boolean matchesKnownPath = startsWithKnownRestBasePath(path);
-            if (!matchesKnownPath) {
-                String normalizedPath = path.startsWith("/") ? path.substring(1) : path;
-                for (String prefix : rootProviderPathPrefixes) {
-                    if (normalizedPath.equals(prefix) || normalizedPath.startsWith(prefix + "/") || normalizedPath.startsWith(prefix + ":")) {
-                        matchesKnownPath = true;
-                        break;
-                    }
+        boolean matchesKnownPath = startsWithKnownRestBasePath(path);
+        if (!matchesKnownPath) {
+            String normalizedPath = path.startsWith("/") ? path.substring(1) : path;
+            for (String prefix : rootProviderPathPrefixes) {
+                if (normalizedPath.equals(prefix) || normalizedPath.startsWith(prefix + "/") || normalizedPath.startsWith(prefix + ":")) {
+                    matchesKnownPath = true;
+                    break;
                 }
             }
-            if (!matchesKnownPath) {
-                return;
-            }
+        }
+        if (!matchesKnownPath) {
+            return;
         }
 
         A2AVersionProvider provider = versionResolver.resolve(versionHeader);

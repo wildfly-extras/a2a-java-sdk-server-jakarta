@@ -14,10 +14,12 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.apps.common.TestUtilsBean;
 import org.a2aproject.sdk.spec.Task;
@@ -133,12 +135,13 @@ public class A2ATestResource {
     @POST
     @Path("/task/{taskId}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response savePushNotificationConfigInStore(@PathParam("taskId") String taskId, String body) throws Exception {
+    public Response savePushNotificationConfigInStore(@PathParam("taskId") String taskId, String body, @Context HttpHeaders headers) throws Exception {
         TaskPushNotificationConfig notificationConfig = JsonUtil.fromJson(body, TaskPushNotificationConfig.class);
         if (notificationConfig == null) {
             return Response.status(404).build();
         }
-        testUtilsBean.saveTaskPushNotificationConfig(taskId, notificationConfig);
+        String protocolVersion = headers.getHeaderString(A2AHeaders.A2A_VERSION);
+        testUtilsBean.saveTaskPushNotificationConfig(taskId, notificationConfig, protocolVersion);
         return Response.ok().build();
     }
 

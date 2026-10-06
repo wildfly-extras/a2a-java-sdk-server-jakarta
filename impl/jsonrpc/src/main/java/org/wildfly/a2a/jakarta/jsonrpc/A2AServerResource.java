@@ -1,5 +1,7 @@
 package org.wildfly.a2a.jakarta.jsonrpc;
 
+import static org.a2aproject.sdk.common.MediaType.APPLICATION_A2A_JSON;
+
 import java.io.IOException;
 
 import jakarta.inject.Inject;
@@ -40,14 +42,14 @@ public class A2AServerResource {
 
     @GET
     @Path(".well-known/agent-card.json")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response getAgentCard(@Context HttpServletRequest httpRequest) {
         return getDelegate().getAgentCard(httpRequest);
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
+    @Produces({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     public Response handleNonStreamingRequests(
             String body,
             @Context HttpServletRequest httpRequest,
@@ -56,7 +58,7 @@ public class A2AServerResource {
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_A2A_JSON})
     @Produces(MediaType.SERVER_SENT_EVENTS)
     public void handleStreamingRequests(
             String body,
