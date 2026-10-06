@@ -31,6 +31,6 @@ public class RestVersionProvider_v1_0 implements A2AVersionProvider {
 
     @Override
     public Set<String> getRestPathPrefixes() {
-        return Set.of("tasks", "message:", "card", "extendedAgentCard");
+        return Set.of("tasks", "message", "card", "extendedAgentCard");
     }
 }

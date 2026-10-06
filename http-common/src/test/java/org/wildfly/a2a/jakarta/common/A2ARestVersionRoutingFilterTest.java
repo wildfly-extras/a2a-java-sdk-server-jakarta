@@ -2,6 +2,7 @@ package org.wildfly.a2a.jakarta.common;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.enterprise.inject.Instance;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -105,7 +106,7 @@ class A2ARestVersionRoutingFilterTest {
 
     @Test
     void unknownVersionHeader_abortsWithBadRequest() throws IOException {
-        setupProvider(TestProviders.provider("1.0", true, "/a2a_rest_v1.0", "/"));
+        setupProvider(TestProviders.provider("1.0", true, "/a2a_rest_v1.0", "/", Set.of("tasks")));
 
         ContainerRequestContext ctx = mock(ContainerRequestContext.class);
         UriInfo uriInfo = mock(UriInfo.class);
@@ -122,7 +123,7 @@ class A2ARestVersionRoutingFilterTest {
 
     @Test
     void errorResponse_containsEscapedVersionHeader() throws IOException {
-        setupProvider(TestProviders.provider("1.0", true, "/a2a_rest_v1.0", "/"));
+        setupProvider(TestProviders.provider("1.0", true, "/a2a_rest_v1.0", "/", Set.of("tasks")));
 
         ContainerRequestContext ctx = mock(ContainerRequestContext.class);
         UriInfo uriInfo = mock(UriInfo.class);
@@ -140,9 +141,27 @@ class A2ARestVersionRoutingFilterTest {
     }
 
     @Test
+    void versionHeader_nonA2aPath_isSkipped() throws IOException {
+        // Regression test: a2a-version header on non-A2A path (e.g. test utility endpoint)
+        // must not be rerouted to the versioned internal endpoint.
+        setupProvider(TestProviders.provider("0.3", false, "/a2a_rest_v0.3", "/v1"));
+
+        ContainerRequestContext ctx = mock(ContainerRequestContext.class);
+        UriInfo uriInfo = mock(UriInfo.class);
+        when(ctx.getUriInfo()).thenReturn(uriInfo);
+        when(uriInfo.getPath()).thenReturn("/test/task/task-123");
+        when(ctx.getHeaderString(A2AHeaders.A2A_VERSION)).thenReturn("0.3");
+
+        filter.filter(ctx);
+
+        verify(ctx, never()).setRequestUri(any(), any());
+        verify(ctx, never()).abortWith(any());
+    }
+
+    @Test
     void multipleProviders_noDefault_unknownVersion_abortsWithBadRequest() throws IOException {
         setupProvider(
-                TestProviders.provider("1.0", false, "/a2a_rest_v1.0", "/"),
+                TestProviders.provider("1.0", false, "/a2a_rest_v1.0", "/", Set.of("tasks")),
                 TestProviders.provider("0.3", false, "/a2a_rest_v0.3", "/v1"));
 
         ContainerRequestContext ctx = mock(ContainerRequestContext.class);
@@ -154,6 +173,26 @@ class A2ARestVersionRoutingFilterTest {
         filter.filter(ctx);
 
         verify(ctx).abortWith(any(Response.class));
+    }
+
+    @Test
+    void versionHeader_a2aPath_pathCheckPasses() throws IOException {
+        // Regression test: A2A-Version header on a path matching a root provider's prefix
+        // must NOT skip routing. Using an unknown version here so the filter aborts with 400
+        // (proving the path check passed; if it had returned early, abortWith would not be called).
+        setupProvider(TestProviders.provider("1.0", false, "/a2a_rest_v1.0", "/", Set.of("tasks", "message")));
+
+        ContainerRequestContext ctx = mock(ContainerRequestContext.class);
+        UriInfo uriInfo = mock(UriInfo.class);
+        when(ctx.getUriInfo()).thenReturn(uriInfo);
+        when(uriInfo.getPath()).thenReturn("/message:send");
+        when(ctx.getHeaderString(A2AHeaders.A2A_VERSION)).thenReturn("99.0");
+
+        filter.filter(ctx);
+
+        ArgumentCaptor<Response> responseCaptor = ArgumentCaptor.forClass(Response.class);
+        verify(ctx).abortWith(responseCaptor.capture());
+        assertEquals(400, responseCaptor.getValue().getStatus());
     }
 
     @Test

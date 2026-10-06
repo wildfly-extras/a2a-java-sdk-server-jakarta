@@ -335,8 +335,6 @@
                         <jboss-fork-embedded>true</jboss-fork-embedded>
                         <stability-level>preview</stability-level>
                     </galleon-options>
-                    <!-- CLI scripts are incompatible with preview stability level during provisioning -->
-                    <!-- Logging will be configured via logging.properties instead -->
                 </configuration>
                 <executions>
                     <execution>
